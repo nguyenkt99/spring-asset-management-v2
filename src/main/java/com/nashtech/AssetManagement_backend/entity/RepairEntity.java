@@ -13,28 +13,28 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name= "request_assigns")
-public class RequestAssignEntity {
+@Table(name = "repairs")
+public class RepairEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "note")
-    private String note;
-
     @Enumerated(EnumType.STRING)
-    @Column(length = 30,name = "state")
-    private RequestAssignState state;
+    @Column(name = "state", length = 30)
+    private RequestState state;
+
+    @ManyToOne
+    @JoinColumn(name="asset_code")
+    private AssetEntity asset;
 
     @Column(name = "requested_date")
     private Date requestedDate;
 
-//    @ManyToOne
-//    @JoinColumn(name="category_id")
-//    private CategoryEntity categoryEntity;
+    @Column(name = "repaired_date")
+    private Date repairedDate;
 
     @ManyToOne
-    @JoinColumn(name="request_by")
-    private UserDetailEntity requestBy;
+    @JoinColumn(name="repair_by")
+    private UserDetailEntity repairBy;
 
 }

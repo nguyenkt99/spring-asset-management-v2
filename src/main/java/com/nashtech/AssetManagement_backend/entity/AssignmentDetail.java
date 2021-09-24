@@ -27,4 +27,9 @@ public class AssignmentDetail {
     @JoinColumn(name="asset_code")
     private AssetEntity asset;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30,name = "state")
+    private AssignmentDetailState state;
+
+
 }

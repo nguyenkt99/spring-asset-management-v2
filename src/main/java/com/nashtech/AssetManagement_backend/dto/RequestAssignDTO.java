@@ -29,8 +29,8 @@ public class RequestAssignDTO {
 
     public RequestAssignDTO(RequestAssignEntity entity) {
         this.id = entity.getId();
-        this.prefix = entity.getCategoryEntity().getPrefix();
-        this.category = entity.getCategoryEntity().getName();
+//        this.prefix = entity.getCategoryEntity().getPrefix();
+//        this.category = entity.getCategoryEntity().getName();
         this.note = entity.getNote();
         this.state = entity.getState();
         this.requestedDate = entity.getRequestedDate();

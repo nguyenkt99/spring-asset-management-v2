@@ -29,18 +29,19 @@ public class RequestAssignServiceImpl implements RequestAssignService {
 
     @Override
     public RequestAssignDTO save(RequestAssignDTO requestAssignDTO) {
-        RequestAssignEntity requestAssign = requestAssignDTO.toEntity();
-
-        CategoryEntity category = categoryRepository.findById(requestAssignDTO.getPrefix())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-        UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
-                .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
-
-        requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
-        requestAssign.setCategoryEntity(category);
-        requestAssign.setRequestBy(requestBy);
-        requestAssign.setRequestedDate(new Date());
-        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
+//        RequestAssignEntity requestAssign = requestAssignDTO.toEntity();
+//
+//        CategoryEntity category = categoryRepository.findById(requestAssignDTO.getPrefix())
+//                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+//        UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
+//                .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
+//
+//        requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
+//        requestAssign.setCategoryEntity(category);
+//        requestAssign.setRequestBy(requestBy);
+//        requestAssign.setRequestedDate(new Date());
+//        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
+        return null;
     }
 
     @Override

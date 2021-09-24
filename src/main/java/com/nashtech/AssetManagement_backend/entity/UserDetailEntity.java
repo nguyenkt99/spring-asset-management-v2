@@ -1,11 +1,9 @@
 package com.nashtech.AssetManagement_backend.entity;
 
-import com.nashtech.AssetManagement_backend.generators.StaffCodeGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -64,11 +62,17 @@ public class UserDetailEntity {
     @OneToMany(mappedBy = "acceptBy")
     private List<RequestEntity> acceptBys = new ArrayList<>();
 
+    @OneToMany(mappedBy = "repairBy")
+    private List<RepairEntity> repairBys = new ArrayList<>();
+
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "staff_code")
     private UsersEntity user;
 
+    @ManyToOne
+    @JoinColumn(name="dept_code")
+    private DepartmentEntity department;
 
     @PrePersist
     protected void onCreate() {
