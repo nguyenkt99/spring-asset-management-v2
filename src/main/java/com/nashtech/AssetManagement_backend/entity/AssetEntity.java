@@ -58,7 +58,7 @@ public class AssetEntity {
     private LocationEntity location;
 
     @OneToMany(mappedBy = "asset")
-    List<AssignmentDetail> assignmentDetails = new ArrayList<>();
+    List<AssignmentDetailEntity> assignmentDetails = new ArrayList<>();
 
     @OneToMany(mappedBy = "asset")
     List<RepairEntity> repairs = new ArrayList<>();

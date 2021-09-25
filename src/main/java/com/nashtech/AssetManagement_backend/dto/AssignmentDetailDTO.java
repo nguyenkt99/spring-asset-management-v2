@@ -1,6 +1,6 @@
 package com.nashtech.AssetManagement_backend.dto;
 
-import com.nashtech.AssetManagement_backend.entity.AssignmentDetail;
+import com.nashtech.AssetManagement_backend.entity.AssignmentDetailEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,7 +23,7 @@ public class AssignmentDetailDTO {
 
     private String specs;
 
-    public AssignmentDetailDTO(AssignmentDetail assignmentDetail) {
+    public AssignmentDetailDTO(AssignmentDetailEntity assignmentDetail) {
         this.assetCode = assignmentDetail.getAsset().getAssetCode();
         this.assetName = assignmentDetail.getAsset().getAssetName();
         this.category = assignmentDetail.getAsset().getCategoryEntity().getName();

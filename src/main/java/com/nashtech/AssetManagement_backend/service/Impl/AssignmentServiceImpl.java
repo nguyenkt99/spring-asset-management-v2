@@ -13,7 +13,6 @@ import com.nashtech.AssetManagement_backend.service.AssignmentService;
 import com.nashtech.AssetManagement_backend.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -96,7 +95,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
 
         List<AssignmentDetailDTO> assignmentDetailDTOList = assignmentDTO.getAssignmentDetails();
-        List<AssignmentDetail> assignmentDetails = new ArrayList<>();
+        List<AssignmentDetailEntity> assignmentDetails = new ArrayList<>();
         // check asset's state
         for(AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOList) {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
@@ -108,7 +107,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         for(AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOList) {
             AssetEntity asset = assetRepository.getById(assignmentDetailDTO.getAssetCode());
-            AssignmentDetail assignmentDetail = new AssignmentDetail();
+            AssignmentDetailEntity assignmentDetail = new AssignmentDetailEntity();
             asset.setState(AssetState.ASSIGNED);
             assignmentDetail.setAsset(asset);
             assignmentDetail.setAssignment(assignment);

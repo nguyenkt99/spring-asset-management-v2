@@ -23,6 +23,9 @@ public class RequestEntity {
     @Column(name = "state", length = 30)
     private RequestState state;
 
+    @Column(name = "note")
+    private String note;
+
     @Column(name = "requested_date")
     private Date requestedDate;
 
@@ -41,8 +44,8 @@ public class RequestEntity {
 //    @JoinColumn(name="assignment_id")
 //    private AssignmentEntity assignmentEntity;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "assignment_id")
-    private AssignmentEntity assignmentEntity;
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @MapsId
+//    @JoinColumn(name = "assignment_id")
+//    private AssignmentEntity assignmentEntity;
 }

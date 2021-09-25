@@ -49,16 +49,15 @@ public class AssignmentDTO {
         dto.setAssignedTo(assign.getAssignTo().getUser().getUserName());
         dto.setAssignedBy(assign.getAssignBy().getUser().getUserName());
         dto.setAssignedDate(assign.getAssignedDate());
-//        if (assign.getState().equals(AssignmentState.COMPLETED))
-        if(assign.getRequestEntity() != null)
-            dto.setReturnedDate(assign.getRequestEntity().getReturnedDate());
-        else
-            dto.setReturnedDate(null);
-        dto.setState(assign.getState());
-        dto.setNote(assign.getNote());
-        if(assign.getRequestEntity() != null)
-            dto.setIsCreatedRequest(true);
-        dto.setAssignmentDetails(assign.getAssignmentDetails().stream().map(AssignmentDetailDTO::new).collect(Collectors.toList()));
+//        if(assign.getRequestEntity() != null)
+//            dto.setReturnedDate(assign.getRequestEntity().getReturnedDate());
+//        else
+//            dto.setReturnedDate(null);
+//        dto.setState(assign.getState());
+//        dto.setNote(assign.getNote());
+//        if(assign.getRequestEntity() != null)
+//            dto.setIsCreatedRequest(true);
+//        dto.setAssignmentDetails(assign.getAssignmentDetails().stream().map(AssignmentDetailDTO::new).collect(Collectors.toList()));
         return dto;
     }
 

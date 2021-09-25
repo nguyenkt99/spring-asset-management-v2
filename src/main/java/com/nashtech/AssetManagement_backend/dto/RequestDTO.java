@@ -39,10 +39,8 @@ public class RequestDTO {
         this.requestBy = entity.getRequestBy().getUser().getUserName();
         if(entity.getAcceptBy() != null)
             this.acceptBy = entity.getAcceptBy().getUser().getUserName();
-        this.assignmentId = entity.getAssignmentEntity().getId();
-//        this.assetCode = entity.getAssignmentEntity().getAssetEntity().getAssetCode();
-//        this.assetName = entity.getAssignmentEntity().getAssetEntity().getAssetName();
-        this.assignedDate = entity.getAssignmentEntity().getAssignedDate();
+//        this.assignmentId = entity.getAssignmentEntity().getId();
+//        this.assignedDate = entity.getAssignmentEntity().getAssignedDate();
     }
 
     public RequestEntity toEntity() {

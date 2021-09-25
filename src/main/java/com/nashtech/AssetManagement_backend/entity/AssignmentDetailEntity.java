@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -13,17 +14,16 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 @Table(name = "assignment_details")
-public class AssignmentDetail {
-    @EmbeddedId
-    private AssignmentDetailId id = new AssignmentDetailId();
+public class AssignmentDetailEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne
-    @MapsId("assignmentId")
     @JoinColumn(name="assignment_id")
     private AssignmentEntity assignment;
 
     @ManyToOne
-    @MapsId("assetCode")
     @JoinColumn(name="asset_code")
     private AssetEntity asset;
 
@@ -31,5 +31,10 @@ public class AssignmentDetail {
     @Column(length = 30,name = "state")
     private AssignmentDetailState state;
 
+    @Column(name = "expiry_date")
+    private Date expiryDate;
 
+    @OneToOne(mappedBy = "assignmentDetail", fetch = FetchType.LAZY)
+    @PrimaryKeyJoinColumn
+    private RequestDetailEntity requestDetail;
 }

@@ -4,10 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -47,10 +45,10 @@ public class AssignmentEntity {
     private UserDetailEntity assignBy;
 
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<AssignmentDetail> assignmentDetails;
+    List<AssignmentDetailEntity> assignmentDetails;
 
-    @OneToOne(mappedBy = "assignmentEntity", fetch = FetchType.LAZY)
-    @PrimaryKeyJoinColumn
-    private RequestEntity requestEntity;
+//    @OneToOne(mappedBy = "assignmentEntity", fetch = FetchType.LAZY)
+//    @PrimaryKeyJoinColumn
+//    private RequestEntity requestEntity;
 }
 

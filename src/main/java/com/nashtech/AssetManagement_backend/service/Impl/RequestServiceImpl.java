@@ -43,9 +43,9 @@ public class RequestServiceImpl implements RequestService {
             throw new ConflictException("Assignment must have accepted state!");
         }
 
-        if (assignment.getRequestEntity() != null) {
-            throw new ConflictException("Request has already been created!");
-        }
+//        if (assignment.getRequestEntity() != null) {
+//            throw new ConflictException("Request has already been created!");
+//        }
 
         UserDetailEntity requestBy = userRepository.getByUserName(requestDTO.getRequestBy()).getUserDetail();
         if(!requestBy.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) { // requestedBy is not admin
@@ -55,7 +55,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         request.setRequestedDate(new Date());
-        request.setAssignmentEntity(assignment);
+//        request.setAssignmentEntity(assignment);
         request.setRequestBy(requestBy);
         request.setState(RequestState.WAITING_FOR_RETURNING);
 //        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
@@ -76,7 +76,7 @@ public class RequestServiceImpl implements RequestService {
 //            javaMailSender.send(msg);
 //        }
         assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
-        request.setAssignmentEntity(assignment);
+//        request.setAssignmentEntity(assignment);
         return new RequestDTO(requestRepository.save(request));
     }
 
@@ -96,7 +96,7 @@ public class RequestServiceImpl implements RequestService {
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
         if (!request.getState().equals(RequestState.WAITING_FOR_RETURNING))
             throw new ConflictException("Request must be waiting for returning!");
-        request.getAssignmentEntity().setState(AssignmentState.ACCEPTED);
+//        request.getAssignmentEntity().setState(AssignmentState.ACCEPTED);
         requestRepository.deleteById(id);
     }
 
@@ -110,11 +110,11 @@ public class RequestServiceImpl implements RequestService {
         request.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
         request.setReturnedDate(new Date());
         requestRepository.save(request);
-        AssignmentEntity assignment = request.getAssignmentEntity();
+//        AssignmentEntity assignment = request.getAssignmentEntity();
 //        AssetEntity asset = assignment.getAssetEntity();
 //        asset.setState(AssetState.AVAILABLE);
 //        assignment.setAssetEntity(asset);
-        assignment.setState(AssignmentState.COMPLETED);
+//        assignment.setState(AssignmentState.COMPLETED);
 //        if(request.getRequestBy().getUser().getRole().equals(RoleName.ROLE_STAFF))
 //        {
 //            SimpleMailMessage msg = new SimpleMailMessage();
@@ -129,7 +129,7 @@ public class RequestServiceImpl implements RequestService {
 //                    "\nAdministrator");
 //            javaMailSender.send(msg);
 //        }
-        assignmentRepository.save(assignment);
+//        assignmentRepository.save(assignment);
         return new RequestDTO(request);
     }
 
