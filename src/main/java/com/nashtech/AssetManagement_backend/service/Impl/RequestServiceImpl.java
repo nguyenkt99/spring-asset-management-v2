@@ -10,7 +10,6 @@ import com.nashtech.AssetManagement_backend.repository.RequestRepository;
 import com.nashtech.AssetManagement_backend.repository.UserRepository;
 import com.nashtech.AssetManagement_backend.service.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +34,7 @@ public class RequestServiceImpl implements RequestService {
     SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");;
     @Override
     public RequestDTO create(RequestDTO requestDTO) {
-        RequestEntity request = requestDTO.toEntity();
+        RequestReturnEntity request = requestDTO.toEntity();
 
         AssignmentEntity assignment = assignmentRepository.findById(requestDTO.getAssignmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
@@ -57,7 +56,7 @@ public class RequestServiceImpl implements RequestService {
         request.setRequestedDate(new Date());
 //        request.setAssignmentEntity(assignment);
         request.setRequestBy(requestBy);
-        request.setState(RequestState.WAITING_FOR_RETURNING);
+        request.setState(RequestReturnState.WAITING_FOR_RETURNING);
 //        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
 //        {
 //            SimpleMailMessage msg = new SimpleMailMessage();
@@ -92,9 +91,9 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public void delete(Long id) {
-        RequestEntity request = requestRepository.findById(id)
+        RequestReturnEntity request = requestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
-        if (!request.getState().equals(RequestState.WAITING_FOR_RETURNING))
+        if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
             throw new ConflictException("Request must be waiting for returning!");
 //        request.getAssignmentEntity().setState(AssignmentState.ACCEPTED);
         requestRepository.deleteById(id);
@@ -102,11 +101,11 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDTO accept(Long id, String staffCode) {
-        RequestEntity request = requestRepository.findById(id)
+        RequestReturnEntity request = requestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(REQUEST_NOT_FOUND_ERROR));
-        if (!request.getState().equals(RequestState.WAITING_FOR_RETURNING))
+        if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
-        request.setState(RequestState.COMPLETED);
+        request.setState(RequestReturnState.COMPLETED);
         request.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
         request.setReturnedDate(new Date());
         requestRepository.save(request);

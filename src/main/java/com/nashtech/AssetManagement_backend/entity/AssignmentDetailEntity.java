@@ -36,5 +36,5 @@ public class AssignmentDetailEntity {
 
     @OneToOne(mappedBy = "assignmentDetail", fetch = FetchType.LAZY)
     @PrimaryKeyJoinColumn
-    private RequestDetailEntity requestDetail;
+    private RequestReturnDetailEntity requestDetail;
 }

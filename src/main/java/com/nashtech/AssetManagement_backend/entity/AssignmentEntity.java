@@ -50,5 +50,9 @@ public class AssignmentEntity {
 //    @OneToOne(mappedBy = "assignmentEntity", fetch = FetchType.LAZY)
 //    @PrimaryKeyJoinColumn
 //    private RequestEntity requestEntity;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_assign_id", referencedColumnName = "id", nullable = true)
+    private RequestAssignEntity requestAssign;
 }
 

@@ -57,10 +57,10 @@ public class UserDetailEntity {
     private List<AssignmentEntity> assignmentsBys = new ArrayList<>();
 
     @OneToMany(mappedBy = "requestBy")
-    private List<RequestEntity> requestBys = new ArrayList<>();
+    private List<RequestReturnEntity> requestBys = new ArrayList<>();
 
     @OneToMany(mappedBy = "acceptBy")
-    private List<RequestEntity> acceptBys = new ArrayList<>();
+    private List<RequestReturnEntity> acceptBys = new ArrayList<>();
 
     @OneToMany(mappedBy = "repairBy")
     private List<RepairEntity> repairBys = new ArrayList<>();

@@ -21,7 +21,7 @@ public class RepairEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", length = 30)
-    private RequestState state;
+    private RequestReturnState state;
 
     @ManyToOne
     @JoinColumn(name="asset_code")

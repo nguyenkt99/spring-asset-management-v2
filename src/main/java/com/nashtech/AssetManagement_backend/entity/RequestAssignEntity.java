@@ -29,12 +29,10 @@ public class RequestAssignEntity {
     @Column(name = "requested_date")
     private Date requestedDate;
 
-//    @ManyToOne
-//    @JoinColumn(name="category_id")
-//    private CategoryEntity categoryEntity;
-
     @ManyToOne
     @JoinColumn(name="request_by")
     private UserDetailEntity requestBy;
 
+    @OneToOne(mappedBy = "requestAssign")
+    private AssignmentEntity assignment;
 }

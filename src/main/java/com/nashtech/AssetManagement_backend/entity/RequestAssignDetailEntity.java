@@ -36,5 +36,5 @@ public class RequestAssignDetailEntity {
     private Integer quantity;
 
     @OneToMany(mappedBy = "request", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RequestDetailEntity> requestDetails;
+    List<RequestReturnDetailEntity> requestDetails;
 }

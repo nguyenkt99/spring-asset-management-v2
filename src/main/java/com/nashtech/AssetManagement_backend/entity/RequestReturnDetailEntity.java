@@ -6,22 +6,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
-@Table(name = "request_details")
+@Table(name = "request_return_details")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestDetailEntity {
+public class RequestReturnDetailEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
     @JoinColumn(name="request_id")
-    private RequestEntity request;
+    private RequestReturnEntity request;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId

@@ -1,8 +1,8 @@
 package com.nashtech.AssetManagement_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.nashtech.AssetManagement_backend.entity.RequestEntity;
-import com.nashtech.AssetManagement_backend.entity.RequestState;
+import com.nashtech.AssetManagement_backend.entity.RequestReturnEntity;
+import com.nashtech.AssetManagement_backend.entity.RequestReturnState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class RequestDTO {
     private Long id;
-    private RequestState state;
+    private RequestReturnState state;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date requestedDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
@@ -31,7 +31,7 @@ public class RequestDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date assignedDate;
 
-    public RequestDTO(RequestEntity entity) {
+    public RequestDTO(RequestReturnEntity entity) {
         this.id = entity.getId();
         this.state = entity.getState();
         this.requestedDate = entity.getRequestedDate();
@@ -43,8 +43,8 @@ public class RequestDTO {
 //        this.assignedDate = entity.getAssignmentEntity().getAssignedDate();
     }
 
-    public RequestEntity toEntity() {
-        RequestEntity entity = new RequestEntity();
+    public RequestReturnEntity toEntity() {
+        RequestReturnEntity entity = new RequestReturnEntity();
         entity.setState(this.state);
         entity.setRequestedDate(entity.getRequestedDate());
         entity.setReturnedDate(entity.getReturnedDate());

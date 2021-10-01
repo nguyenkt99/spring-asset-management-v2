@@ -9,19 +9,19 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "requests")
+@Table(name = "request_returns")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class RequestEntity {
+public class RequestReturnEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", length = 30)
-    private RequestState state;
+    private RequestReturnState state;
 
     @Column(name = "note")
     private String note;
