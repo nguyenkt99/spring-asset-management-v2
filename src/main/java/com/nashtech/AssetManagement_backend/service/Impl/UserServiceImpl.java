@@ -7,10 +7,7 @@ import com.nashtech.AssetManagement_backend.exception.ConflictException;
 import com.nashtech.AssetManagement_backend.exception.InvalidInputException;
 import com.nashtech.AssetManagement_backend.exception.ResourceNotFoundException;
 import com.nashtech.AssetManagement_backend.handleException.NotFoundExecptionHandle;
-import com.nashtech.AssetManagement_backend.repository.LocationRepository;
-import com.nashtech.AssetManagement_backend.repository.RoleRepository;
-import com.nashtech.AssetManagement_backend.repository.UserDetailRepository;
-import com.nashtech.AssetManagement_backend.repository.UserRepository;
+import com.nashtech.AssetManagement_backend.repository.*;
 import com.nashtech.AssetManagement_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +34,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     LocationRepository locationRepository;
+
+    @Autowired
+    DepartmentRepository departmentRepository;
 
     @Override
     public UsersEntity findByUserName(String username) {
@@ -80,8 +80,12 @@ public class UserServiceImpl implements UserService {
     public UserDto saveUser(UserDto userDto, String username) {
         LocationEntity location = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail().getLocation();
+//        LocationEntity location = locationRepository.getById(1L);
+        DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
         UsersEntity usersEntity = userDto.toEntity(userDto);
         usersEntity.getUserDetail().setLocation(location);
+        usersEntity.getUserDetail().setDepartment(department);
         // validate
         if (usersEntity.getUserDetail().getJoinedDate().before(usersEntity.getUserDetail().getDateOfBirth()))
             throw new InvalidInputException(

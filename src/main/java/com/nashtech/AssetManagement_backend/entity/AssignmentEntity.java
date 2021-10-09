@@ -29,12 +29,14 @@ public class AssignmentEntity {
     @Column(length = 30,name = "state")
     private AssignmentState state;
 
+    @Column(name = "created_date")
+    private Date createdDate;
+
     @Column(name = "assigned_date")
     private Date assignedDate;
 
-//    @ManyToOne
-//    @JoinColumn(name="asset_id")
-//    private AssetEntity assetEntity;
+    @Column(name = "intended_return_date")
+    private Date intendedReturnDate;
 
     @ManyToOne
     @JoinColumn(name="assign_to")
@@ -47,11 +49,10 @@ public class AssignmentEntity {
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     List<AssignmentDetailEntity> assignmentDetails;
 
-//    @OneToOne(mappedBy = "assignmentEntity", fetch = FetchType.LAZY)
-//    @PrimaryKeyJoinColumn
-//    private RequestEntity requestEntity;
+    @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    List<RequestReturnEntity> requestReturns;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "request_assign_id", referencedColumnName = "id", nullable = true)
     private RequestAssignEntity requestAssign;
 }

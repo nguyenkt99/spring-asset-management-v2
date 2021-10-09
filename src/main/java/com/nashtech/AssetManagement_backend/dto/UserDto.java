@@ -24,7 +24,7 @@ public class UserDto {
 
     @Size(max = 50)
     @NotBlank(message = "firstname can't not be blank")
-    private String firstName;
+        private String firstName;
 
     @Size(max = 50)
     @NotBlank(message = "lastname can't not be blank")
@@ -46,7 +46,11 @@ public class UserDto {
     private Date joinedDate;
 
     private String email;
-    // @NotNull(message = "location is not chosen")
+
+    private String deptCode;
+
+    private String deptName;
+
     private Location location;
 
     private boolean isFirstLogin;
@@ -71,6 +75,8 @@ public class UserDto {
         dto.setFirstLogin(entity.isFirstLogin());
         dto.setEmail(entity.getUserDetail().getEmail());
         dto.setFullName(entity.getUserDetail().getFirstName() + " " + entity.getUserDetail().getLastName());
+        dto.setDeptCode(entity.getUserDetail().getDepartment().getDeptCode());
+        dto.setDeptName(entity.getUserDetail().getDepartment().getName());
         return dto;
     }
 

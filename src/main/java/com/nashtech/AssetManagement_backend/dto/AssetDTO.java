@@ -52,6 +52,8 @@ public class AssetDTO {
         dto.setCategoryName(asset.getCategoryEntity().getName());
         dto.setAssignmentDetailDTOList(asset.getAssignmentDetails()
             .stream().map(AssignmentDetailDTO::new).collect(Collectors.toList()));
+
+
         return dto;
     }
 

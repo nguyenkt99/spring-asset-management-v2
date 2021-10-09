@@ -20,54 +20,52 @@ import lombok.*;
 public class AssignmentDTO {
     private Long id;
 
+    private Long requestAssignId;
+
     @NotBlank
     private String assignedTo;
 
     @NotBlank
     private String assignedBy;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date assignedDate;
-
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date returnedDate;
-
     private AssignmentState state;
 
     private String note;
 
-    private Boolean isCreatedRequest = false;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date createdDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date assignedDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date intendedReturnDate;;
+
+//    private Boolean isCreatedRequest = false;
 
     private List<AssignmentDetailDTO> assignmentDetails = new ArrayList<>();
 
-    public static AssignmentDTO toDTO(AssignmentEntity assign) {
-        if (assign == null)
-            return null;
-        AssignmentDTO dto = new AssignmentDTO();
-        dto.setId(assign.getId());
-
-        dto.setAssignedTo(assign.getAssignTo().getUser().getUserName());
-        dto.setAssignedBy(assign.getAssignBy().getUser().getUserName());
-        dto.setAssignedDate(assign.getAssignedDate());
-//        if(assign.getRequestEntity() != null)
-//            dto.setReturnedDate(assign.getRequestEntity().getReturnedDate());
-//        else
-//            dto.setReturnedDate(null);
-//        dto.setState(assign.getState());
-//        dto.setNote(assign.getNote());
-//        if(assign.getRequestEntity() != null)
-//            dto.setIsCreatedRequest(true);
-//        dto.setAssignmentDetails(assign.getAssignmentDetails().stream().map(AssignmentDetailDTO::new).collect(Collectors.toList()));
-        return dto;
+    public AssignmentDTO(AssignmentEntity assignment) {
+        this.id = assignment.getId();
+        if(assignment.getRequestAssign() != null)
+            this.requestAssignId = assignment.getRequestAssign().getId();
+        this.assignedTo = assignment.getAssignTo().getUser().getUserName();
+        this.assignedBy = assignment.getAssignBy().getUser().getUserName();
+        this.state = assignment.getState();
+        this.note = assignment.getNote();
+        this.createdDate = assignment.getCreatedDate();
+        this.assignedDate = assignment.getAssignedDate();
+        this.intendedReturnDate = assignment.getIntendedReturnDate();
+        this.assignmentDetails = assignment.getAssignmentDetails().stream().map(AssignmentDetailDTO::new).collect(Collectors.toList());
     }
 
-    public static AssignmentEntity toEntity(AssignmentDTO dto) {
-        if (dto == null)
-            return null;
-        AssignmentEntity assign = new AssignmentEntity();
-        assign.setAssignedDate(dto.getAssignedDate());
-        assign.setState(dto.getState());
-        assign.setNote(dto.getNote());
-        return assign;
+    public AssignmentEntity toEntity() {
+        AssignmentEntity assignment = new AssignmentEntity();
+//        assignment.setState(this.state);
+        assignment.setNote(this.note);
+//        assignment.setCreatedDate(this.createdDate);
+        assignment.setAssignedDate(this.assignedDate);
+        assignment.setIntendedReturnDate(this.intendedReturnDate);
+        return assignment;
     }
 }

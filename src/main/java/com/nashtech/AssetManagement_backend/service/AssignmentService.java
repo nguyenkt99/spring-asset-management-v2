@@ -7,13 +7,11 @@ import com.nashtech.AssetManagement_backend.entity.AssignmentState;
 import com.nashtech.AssetManagement_backend.entity.LocationEntity;
 
 public interface AssignmentService {
-    List<AssignmentDTO> getAllByAdmimLocation(String username);
+    List<AssignmentDTO> getAllByAdminLocation(String username);
     List<AssignmentDTO> getAssignmentsByUser(String username);
     AssignmentDTO getAssignmentById(Long assignmentId);
     AssignmentDTO save(AssignmentDTO assignmentDTO);
-    AssignmentDTO update(AssignmentDTO assignmentDTO);
-
+    AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO);
     boolean deleteAssignment(Long assignmentId, LocationEntity location);
-
     AssignmentDTO updateStateAssignment(AssignmentDTO assignmentDTO, String username);
 }

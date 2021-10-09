@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -34,6 +35,12 @@ public class CategoryController {
     @DeleteMapping("/{prefix}")
     public void deleteCategory(@PathVariable String prefix) {
         categoryService.delete(prefix);
+    }
+
+    @GetMapping("/{prefix}")
+    public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate )
+    {
+        return categoryService.getSumOfAvailableAssetByCategory(prefix, startDate, endDate);
     }
 
 }

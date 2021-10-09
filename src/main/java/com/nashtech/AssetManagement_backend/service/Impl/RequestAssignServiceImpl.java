@@ -1,6 +1,7 @@
 package com.nashtech.AssetManagement_backend.service.Impl;
 
 import com.nashtech.AssetManagement_backend.dto.RequestAssignDTO;
+import com.nashtech.AssetManagement_backend.dto.RequestAssignDetailDTO;
 import com.nashtech.AssetManagement_backend.entity.*;
 import com.nashtech.AssetManagement_backend.exception.BadRequestException;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
@@ -29,19 +30,32 @@ public class RequestAssignServiceImpl implements RequestAssignService {
 
     @Override
     public RequestAssignDTO save(RequestAssignDTO requestAssignDTO) {
-//        RequestAssignEntity requestAssign = requestAssignDTO.toEntity();
-//
-//        CategoryEntity category = categoryRepository.findById(requestAssignDTO.getPrefix())
-//                .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-//        UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
-//                .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
-//
-//        requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
-//        requestAssign.setCategoryEntity(category);
-//        requestAssign.setRequestBy(requestBy);
-//        requestAssign.setRequestedDate(new Date());
-//        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
-        return null;
+        RequestAssignEntity requestAssign = requestAssignDTO.toEntity();
+
+        List<RequestAssignDetailEntity> assignmentDetails = requestAssign.getRequestAssignDetails();
+        for(RequestAssignDetailDTO r : requestAssignDTO.getRequestAssignDetails()) {
+            RequestAssignDetailEntity requestAssignDetail = new RequestAssignDetailEntity();
+            CategoryEntity category = categoryRepository.findById(r.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+
+            int sumOfAvailableAsset = categoryRepository.getSumOfAvailableAssetByCategory(r.getCategoryId(), requestAssignDTO.getIntendedAssignDate(), requestAssignDTO.getIntendedReturnDate());
+            if(r.getQuantity() > sumOfAvailableAsset) {
+                throw new ConflictException("Asset not enough!");
+            }
+            requestAssignDetail.setCategory(category);
+            requestAssignDetail.setRequestAssign(requestAssign);
+            requestAssignDetail.setQuantity(r.getQuantity());
+            assignmentDetails.add(requestAssignDetail);
+        }
+
+        UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
+                .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
+        requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
+        requestAssign.setRequestBy(requestBy);
+        requestAssign.setRequestedDate(new Date());
+        requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
+        requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
+        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
     }
 
     @Override

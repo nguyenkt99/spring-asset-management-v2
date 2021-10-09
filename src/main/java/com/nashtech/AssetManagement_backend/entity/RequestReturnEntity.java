@@ -40,9 +40,9 @@ public class RequestReturnEntity {
     @JoinColumn(name="accept_by")
     private UserDetailEntity acceptBy;
 
-//    @ManyToOne
-//    @JoinColumn(name="assignment_id")
-//    private AssignmentEntity assignmentEntity;
+    @ManyToOne
+    @JoinColumn(name="assignment_id")
+    private AssignmentEntity assignment;
 
 //    @OneToOne(fetch = FetchType.LAZY)
 //    @MapsId

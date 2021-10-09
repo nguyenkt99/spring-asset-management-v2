@@ -28,8 +28,8 @@ public class AssignmentController {
 
     @GetMapping("")
     @ResponseBody
-    public ResponseEntity<List<AssignmentDTO>> getAllByAdmimLocation(Authentication authentication) {
-        List<AssignmentDTO> assignmentDTOs = assignmentService.getAllByAdmimLocation(authentication.getName());
+    public ResponseEntity<List<AssignmentDTO>> getAllByAdminLocation(Authentication authentication) {
+        List<AssignmentDTO> assignmentDTOs = assignmentService.getAllByAdminLocation(authentication.getName());
         if (assignmentDTOs.isEmpty()) {
             return new ResponseEntity<>(assignmentDTOs, HttpStatus.NO_CONTENT);
         }
@@ -61,9 +61,8 @@ public class AssignmentController {
     public AssignmentDTO editAssignment(@PathVariable("assignmentId") Long assignmentId, @RequestBody AssignmentDTO assignmentDTO, Authentication authentication) {
         assignmentDTO.setAssignedBy(authentication.getName());
         assignmentDTO.setId(assignmentId);
-        return assignmentService.update(assignmentDTO);
+        return assignmentService.updateAssignment(assignmentDTO);
     }
-
 
     @DeleteMapping("/{assignmentId}")
     public ResponseEntity<Map<String, Boolean>> deleteCategory(Authentication authentication,

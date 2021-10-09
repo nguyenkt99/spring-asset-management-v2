@@ -11,6 +11,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
         CategoryEntity category = categoryRepo.findByPrefix(dto.getPrefix())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
 
-        if(!dto.getName().equalsIgnoreCase(category.getName()) && categoryRepo.existsByName(dto.getName())) {
+        if (!dto.getName().equalsIgnoreCase(category.getName()) && categoryRepo.existsByName(dto.getName())) {
             throw new ConflictException("Category is exists!");
         }
 
@@ -57,11 +60,26 @@ public class CategoryServiceImpl implements CategoryService {
     public void delete(String prefix) {
         CategoryEntity category = categoryRepo.findByPrefix(prefix)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
-        if(category.getAssetEntities().size() > 0) {
+        if (category.getAssetEntities().size() > 0) {
             throw new ConflictException("Asset is available in category!");
         }
 
         categoryRepo.deleteById(prefix);
+    }
+
+    @Override
+    public Integer getSumOfAvailableAssetByCategory(String prefix, String startDate, String endDate) {
+        Date date1=null;
+        Date date2=null;
+        try {
+            date1 = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
+            date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+        } catch (ParseException e) {
+//            e.printStackTrace();
+        }
+
+
+        return categoryRepo.getSumOfAvailableAssetByCategory(prefix, date1, date2);
     }
 
 }

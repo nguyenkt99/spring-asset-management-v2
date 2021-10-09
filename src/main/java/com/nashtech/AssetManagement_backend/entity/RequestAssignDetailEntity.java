@@ -15,12 +15,8 @@ import java.util.List;
 @Entity
 @Table(name= "request_assign_details")
 public class RequestAssignDetailEntity {
-//    @EmbeddedId
-//    private RequestAssignDetailId id = new RequestAssignDetailId();
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private RequestAssignDetailId id = new RequestAssignDetailId();
 
     @ManyToOne
     @MapsId("requestAssignId")
@@ -35,6 +31,4 @@ public class RequestAssignDetailEntity {
     @Column(name = "quantity")
     private Integer quantity;
 
-    @OneToMany(mappedBy = "request", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RequestReturnDetailEntity> requestDetails;
 }
