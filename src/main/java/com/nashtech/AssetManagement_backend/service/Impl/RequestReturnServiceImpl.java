@@ -1,27 +1,29 @@
 package com.nashtech.AssetManagement_backend.service.Impl;
 
-import com.nashtech.AssetManagement_backend.dto.RequestDTO;
+import com.nashtech.AssetManagement_backend.dto.RequestReturnDTO;
+//import com.nashtech.AssetManagement_backend.dto.RequestReturnDetailDTO;
 import com.nashtech.AssetManagement_backend.entity.*;
 import com.nashtech.AssetManagement_backend.exception.BadRequestException;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
 import com.nashtech.AssetManagement_backend.exception.ResourceNotFoundException;
-import com.nashtech.AssetManagement_backend.repository.AssignmentRepository;
-import com.nashtech.AssetManagement_backend.repository.RequestRepository;
-import com.nashtech.AssetManagement_backend.repository.UserRepository;
-import com.nashtech.AssetManagement_backend.service.RequestService;
+import com.nashtech.AssetManagement_backend.repository.*;
+import com.nashtech.AssetManagement_backend.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class RequestServiceImpl implements RequestService {
+public class RequestReturnServiceImpl implements RequestReturnService {
     @Autowired
-    RequestRepository requestRepository;
+    RequestReturnRepository requestReturnRepository;
+
+    @Autowired
+    AssignmentDetailRepository assignmentDetailRepository;
 
     @Autowired
     AssignmentRepository assignmentRepository;
@@ -31,84 +33,90 @@ public class RequestServiceImpl implements RequestService {
 
     @Autowired
     JavaMailSender javaMailSender;
-    SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");;
-    @Override
-    public RequestDTO create(RequestDTO requestDTO) {
-        RequestReturnEntity request = requestDTO.toEntity();
 
-        AssignmentEntity assignment = assignmentRepository.findById(requestDTO.getAssignmentId())
+    @Override
+    public RequestReturnDTO create(RequestReturnDTO requestReturnDTO) {
+        RequestReturnEntity requestReturn = requestReturnDTO.toEntity();
+//        List<RequestReturnDetailEntity> requestReturnDetails = new ArrayList<>();
+        AssignmentEntity assignment = assignmentRepository.findById(requestReturnDTO.getAssignmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
         if (assignment.getState() != AssignmentState.ACCEPTED) {
             throw new ConflictException("Assignment must have accepted state!");
         }
 
-//        if (assignment.getRequestEntity() != null) {
-//            throw new ConflictException("Request has already been created!");
-//        }
-
-        UserDetailEntity requestBy = userRepository.getByUserName(requestDTO.getRequestBy()).getUserDetail();
+        UserDetailEntity requestBy = userRepository.getByUserName(requestReturnDTO.getRequestBy()).getUserDetail();
         if(!requestBy.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) { // requestedBy is not admin
             if(!requestBy.equals(assignment.getAssignTo())) { // requestedBy is also not assignedTo
                 throw new ConflictException("RequestedBy must be admin or assignee!");
             }
         }
 
-        request.setRequestedDate(new Date());
-//        request.setAssignmentEntity(assignment);
-        request.setRequestBy(requestBy);
-        request.setState(RequestReturnState.WAITING_FOR_RETURNING);
-//        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
-//        {
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(assignment.getAssignTo().getEmail());
-//            msg.setSubject("Returning Asset");
-//            msg.setText("Your administrator need you to return assets to the company: " +
-//                    "" +
-//                    "\nAsset" +
-//                    " " +
-//                    "code: " + assignment.getAssetEntity().getAssetCode()+
-//                    "\nAsset name: " + assignment.getAssetEntity().getAssetName()+
-//                    "\nRequested Date: " + format.format(request.getRequestedDate())+
-//                    "\nYou must return it within 3 days." +
-//                    "\nPlease check your request by your account\nKind Regards," +
-//                    "\nAdministrator");
-//            javaMailSender.send(msg);
+//        requestReturn.setRequestedDate(new Date());
+//        requestReturn.setRequestBy(requestBy);
+//        requestReturn.setState(RequestReturnState.WAITING_FOR_RETURNING);
+//        for(RequestReturnDetailDTO r : requestReturnDTO.getRequestReturnDetails()) {
+//            AssignmentDetailEntity assignmentDetail = assignmentDetailRepository.findById(r.getAssignmentDetailId())
+//                    .orElseThrow(()-> new ResourceNotFoundException("Assignment detail not found!"));
+//            RequestReturnDetailEntity requestReturnDetail = new RequestReturnDetailEntity();
+//            requestReturnDetail.setRequestReturn(requestReturn);
+//            requestReturnDetail.setAssignmentDetail(assignmentDetail);
+//            requestReturnDetails.add(requestReturnDetail);
 //        }
-        assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
-//        request.setAssignmentEntity(assignment);
-        return new RequestDTO(requestRepository.save(request));
+//        requestReturn.setRequestReturnDetails(requestReturnDetails);
+//        requestReturn.setAssignment(assignment);
+//
+////        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
+////        {
+////            SimpleMailMessage msg = new SimpleMailMessage();
+////            msg.setTo(assignment.getAssignTo().getEmail());
+////            msg.setSubject("Returning Asset");
+////            msg.setText("Your administrator need you to return assets to the company: " +
+////                    "" +
+////                    "\nAsset" +
+////                    " " +
+////                    "code: " + assignment.getAssetEntity().getAssetCode()+
+////                    "\nAsset name: " + assignment.getAssetEntity().getAssetName()+
+////                    "\nRequested Date: " + format.format(request.getRequestedDate())+
+////                    "\nYou must return it within 3 days." +
+////                    "\nPlease check your request by your account\nKind Regards," +
+////                    "\nAdministrator");
+////            javaMailSender.send(msg);
+////        }
+//        assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
+////        request.setAssignmentEntity(assignment);
+        return new RequestReturnDTO(requestReturnRepository.save(requestReturn));
     }
 
     @Override
-    public List<RequestDTO> getAllByAdminLocation(String adminUsername) {
+    public List<RequestReturnDTO> getAllByAdminLocation(String adminUsername) {
         LocationEntity location = userRepository.findByUserName(adminUsername).get().getUserDetail().getLocation();
-        List<RequestDTO> requestDTOs = requestRepository.findAll().stream()
+        List<RequestReturnDTO> requestReturnDTOS = requestReturnRepository.findAll().stream()
                 .filter(request -> (request.getRequestBy().getLocation().equals(location)))
                 .sorted((o1, o2) -> (int) (o1.getId() - o2.getId()))
-                .map(RequestDTO::new).collect(Collectors.toList());
-        return requestDTOs;
+                .map(RequestReturnDTO::new).collect(Collectors.toList());
+        return requestReturnDTOS;
     }
 
     @Override
     public void delete(Long id) {
-        RequestReturnEntity request = requestRepository.findById(id)
+        RequestReturnEntity request = requestReturnRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
         if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
             throw new ConflictException("Request must be waiting for returning!");
 //        request.getAssignmentEntity().setState(AssignmentState.ACCEPTED);
-        requestRepository.deleteById(id);
+        requestReturnRepository.deleteById(id);
     }
 
     @Override
-    public RequestDTO accept(Long id, String staffCode) {
-        RequestReturnEntity request = requestRepository.findById(id)
+    public RequestReturnDTO accept(Long id, String staffCode) {
+        RequestReturnEntity request = requestReturnRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(REQUEST_NOT_FOUND_ERROR));
         if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
         request.setState(RequestReturnState.COMPLETED);
         request.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
         request.setReturnedDate(new Date());
-        requestRepository.save(request);
+        requestReturnRepository.save(request);
 //        AssignmentEntity assignment = request.getAssignmentEntity();
 //        AssetEntity asset = assignment.getAssetEntity();
 //        asset.setState(AssetState.AVAILABLE);
@@ -129,7 +137,7 @@ public class RequestServiceImpl implements RequestService {
 //            javaMailSender.send(msg);
 //        }
 //        assignmentRepository.save(assignment);
-        return new RequestDTO(request);
+        return new RequestReturnDTO(request);
     }
 
     private final String REQUEST_NOT_FOUND_ERROR = "Request not found.";

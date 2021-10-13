@@ -1,8 +1,8 @@
 package com.nashtech.AssetManagement_backend.controller;
 
-import com.nashtech.AssetManagement_backend.dto.RequestDTO;
+import com.nashtech.AssetManagement_backend.dto.RequestReturnDTO;
 import com.nashtech.AssetManagement_backend.security.services.UserDetailsImpl;
-import com.nashtech.AssetManagement_backend.service.RequestService;
+import com.nashtech.AssetManagement_backend.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,21 +17,21 @@ import java.util.List;
 @RequestMapping("/api/request")
 public class RequestController {
     @Autowired
-    RequestService requestService;
+    RequestReturnService requestService;
 
     @PostMapping
-    public RequestDTO create(@Valid @RequestBody RequestDTO requestDTO, HttpServletRequest request) {
-        requestDTO.setRequestBy(request.getAttribute("userName").toString());
-        return requestService.create(requestDTO);
+    public RequestReturnDTO create(@Valid @RequestBody RequestReturnDTO requestReturnDTO, HttpServletRequest request) {
+        requestReturnDTO.setRequestBy(request.getAttribute("userName").toString());
+        return requestService.create(requestReturnDTO);
     }
 
     @GetMapping
-    public List<RequestDTO> getAll(HttpServletRequest request) {
+    public List<RequestReturnDTO> getAll(HttpServletRequest request) {
         return requestService.getAllByAdminLocation(request.getAttribute("userName").toString());
     }
 
     @PutMapping("/{requestId}")
-    public ResponseEntity<RequestDTO> acceptRequest(@PathVariable("requestId") Long requestId) {
+    public ResponseEntity<RequestReturnDTO> acceptRequest(@PathVariable("requestId") Long requestId) {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
         return ResponseEntity.ok().body(requestService.accept(requestId, userDetails.getStaffCode()));
