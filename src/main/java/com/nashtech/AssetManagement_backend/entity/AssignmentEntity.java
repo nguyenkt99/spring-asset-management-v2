@@ -32,6 +32,9 @@ public class AssignmentEntity {
     @Column(name = "created_date")
     private Date createdDate;
 
+    @Column(name = "updated_date")
+    private Date updatedDate;
+
     @Column(name = "assigned_date")
     private Date assignedDate;
 

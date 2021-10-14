@@ -18,7 +18,7 @@ import java.util.List;
 @Table(name = "departments")
 public class DepartmentEntity {
     @Id
-    @Column(name = "dept_code", length = 2)
+    @Column(name = "dept_code", length = 5)
     private String deptCode;
 
     @Column(name ="name", unique = true, length = 15)

@@ -20,7 +20,7 @@ public class LocationEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "location", length = 20)
+    @Column(name = "location", length = 20, unique = true)
     private Location name;
 
     @OneToMany(mappedBy = "location")

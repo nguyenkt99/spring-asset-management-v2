@@ -2,7 +2,6 @@ package com.nashtech.AssetManagement_backend.service.Impl;
 
 import com.nashtech.AssetManagement_backend.dto.AssignmentDTO;
 import com.nashtech.AssetManagement_backend.dto.AssignmentDetailDTO;
-import com.nashtech.AssetManagement_backend.dto.RequestAssignDetailDTO;
 import com.nashtech.AssetManagement_backend.entity.*;
 import com.nashtech.AssetManagement_backend.exception.BadRequestException;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
@@ -46,7 +45,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public List<AssignmentDTO> getAllByAdminLocation(String username) {
         LocationEntity location = userService.findByUserName(username).getUserDetail().getLocation();
-        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findAllByAdmimLocation(location.getId())
+        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findAllByAdminLocation(location.getId())
                 .stream().map(AssignmentDTO::new).collect(Collectors.toList());
         return assignmentDTOs;
     }
@@ -54,15 +53,8 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public List<AssignmentDTO> getAssignmentsByUser(String username) {
         UsersEntity user = userRepository.findByUserName(username).get();
-        List<AssignmentState> states = new ArrayList<>();
-        states.add(AssignmentState.WAITING_FOR_ACCEPTANCE);
-        states.add(AssignmentState.ACCEPTED);
-        states.add(AssignmentState.WAITING_FOR_RETURNING);
-        states.add(AssignmentState.COMPLETED);
-        states.add(AssignmentState.DECLINED);
-        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findByAssignTo_StaffCodeAndAssignedDateIsLessThanEqualAndStateIn(user.getStaffCode(), new Date(), states)
+        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findByAssignTo_StaffCodeAndAssignedDateIsLessThanEqualOrderByIdAsc(user.getStaffCode(), new Date())
                 .stream().map(AssignmentDTO::new).collect(Collectors.toList());
-        assignmentDTOs.sort(Comparator.comparing(AssignmentDTO::getId));
         return assignmentDTOs;
     }
 
@@ -87,54 +79,54 @@ public class AssignmentServiceImpl implements AssignmentService {
         UserDetailEntity assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
                 .orElseThrow(() -> new ResourceNotFoundException("AssignBy not found!")).getUserDetail();
 
+        // check assigned date and intended date must be today or future
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
         Date todayDate = null;
         Date assignedDate = null;
+        Date intendedDate = null;
         try {
             todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
             assignedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getAssignedDate()));
+            intendedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getIntendedReturnDate()));
         } catch (ParseException e) {
             throw new RuntimeException("Parse date error");
         }
 
         if (assignedDate.before(todayDate)) {
-            throw new ConflictException("The assigned date is current or future!");
+            throw new ConflictException("The assigned date is today or future!");
+        }
+
+        if (intendedDate.before(todayDate)) {
+            throw new ConflictException("The intended return date is today or future!");
         }
 
         if (assignTo.getLocation() != assignBy.getLocation()) {
             throw new ConflictException("The location of assignTo difference from admin!");
         }
 
-        List<AssignmentDetailDTO> assignmentDetailDTOList = assignmentDTO.getAssignmentDetails();
+        List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
         List<AssignmentDetailEntity> assignmentDetails = new ArrayList<>();
         // check asset's state
-        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOList) {
+        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
-//            if (asset.getState() != AssetState.AVAILABLE) {
-//                throw new ConflictException("Asset must available state!");
-//            }
-
-            for (AssignmentDetailEntity x : asset.getAssignmentDetails()) {
+            for (AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) {
                 if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
-                    if (!x.getState().equals(AssignmentState.DECLINED)) {
-                        if (!(assignmentDTO.getIntendedReturnDate().before(x.getAssignment().getAssignedDate())
-                                || assignmentDTO.getAssignedDate().after(x.getAssignment().getIntendedReturnDate()))) {
+                    if (assignmentDetail.getState() != AssignmentState.DECLINED && assignmentDetail.getState() != AssignmentState.COMPLETED) {
+                        if (!(assignmentDTO.getIntendedReturnDate().before(assignmentDetail.getAssignment().getAssignedDate())
+                                || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))) {
                             throw new ConflictException("Asset not available in this time!");
                         }
                     }
-
                 } else {
                     throw new ConflictException("AssignedDate and IntendedReturnDate are invalid!");
                 }
             }
-
         }
 
-        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOList) {
+        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
             AssetEntity asset = assetRepository.getById(assignmentDetailDTO.getAssetCode());
             AssignmentDetailEntity assignmentDetail = new AssignmentDetailEntity();
-//            asset.setState(AssetState.ASSIGNED);
             assignmentDetail.setAsset(asset);
             assignmentDetail.setAssignment(assignment);
             assignmentDetail.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
@@ -164,64 +156,98 @@ public class AssignmentServiceImpl implements AssignmentService {
     public AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO) {
         AssignmentEntity assignment = assignmentRepository.findById(assignmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
-        if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE) {
-            throw new ConflictException("Assignment is editable while in state Waiting for acceptance!");
+        if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE && assignment.getState() != AssignmentState.ACCEPTED) {
+            throw new ConflictException("Assignment is editable while in waiting for acceptance or accepted state!");
         }
 
-        // check assigned date must be current or future
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date todayDate = null;
-        Date assignedDate = null;
-        try {
-            todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
-            assignedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getAssignedDate()));
-        } catch (ParseException e) {
-            throw new RuntimeException("Parse date error");
-        }
-
-        if (assignedDate.before(todayDate)) {
-            throw new ConflictException("The assigned date is current or future!");
-        }
-
-        List<AssignmentDetailDTO> assignmentDetailDTOList = assignmentDTO.getAssignmentDetails();
+        List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
         List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
-        // check asset's state
-        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOList) {
-            AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
-                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
+//        // check asset's state
+//        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
+//            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository.findById(assignmentDetailDTO.getAssetCode())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found!")).getAssignmentDetails()
+//                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
+//                    .collect(Collectors.toList());
+//            for (AssignmentDetailEntity x : assetAssignmentDetails) {
+//                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
+//                    if (!(assignmentDTO.getIntendedReturnDate().before(x.getAssignment().getAssignedDate())
+//                            || assignmentDTO.getAssignedDate().after(x.getAssignment().getIntendedReturnDate()))) {
+//                        throw new ConflictException("Asset not available in this time!");
+//                    }
+//                } else {
+//                    throw new ConflictException("Date is invalid!");
+//                }
+//            }
+//        }
 
-            for (AssignmentDetailEntity x : asset.getAssignmentDetails().stream().filter(x -> !x.getAssignment().getId().equals(assignment.getId())).collect(Collectors.toList())) {
-                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
-                    if (!(assignmentDTO.getIntendedReturnDate().before(x.getAssignment().getAssignedDate())
-                            || assignmentDTO.getAssignedDate().after(x.getAssignment().getIntendedReturnDate()))) {
-                        throw new ConflictException("Asset not available in this time!");
-                    }
-                } else {
-                    throw new ConflictException("Date is invalid!");
+        UserDetailEntity assignTo = assignment.getAssignTo();
+        UserDetailEntity assignBy;
+        if(assignment.getAssignmentDetails().stream()
+                .allMatch(a -> a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE)) {
+            // check assigned date and intended date must be today or future
+            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+            Date todayDate = null;
+            Date assignedDate = null;
+            Date intendedDate = null;
+            try {
+                todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
+                assignedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getAssignedDate()));
+                intendedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getIntendedReturnDate()));
+            } catch (ParseException e) {
+                throw new RuntimeException("Parse date error");
+            }
+
+            if (assignedDate.before(todayDate)) {
+                throw new ConflictException("The assigned date is today or future!");
+            }
+
+            if (intendedDate.before(todayDate)) {
+                throw new ConflictException("The intended return date is today or future!");
+            }
+
+            // case: new assign to
+            if (!assignment.getAssignTo().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedTo())) {
+                assignTo = userRepository.findByUserName(assignmentDTO.getAssignedTo())
+                        .orElseThrow(() -> new ResourceNotFoundException("AssignTo not found!")).getUserDetail();
+                assignment.setAssignTo(assignTo);
+            }
+
+            // case: new assign by
+            if (!assignment.getAssignBy().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedBy())) {
+                assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
+                        .orElseThrow(() -> new ResourceNotFoundException("AssignBy not found!")).getUserDetail();
+                assignment.setAssignBy(assignBy);
+
+                // check location
+                if (assignTo.getLocation() != assignBy.getLocation()) {
+                    throw new ConflictException("The location of assignTo difference from admin!");
                 }
             }
 
+            assignment.setAssignedDate(assignmentDTO.getAssignedDate());
         }
 
-        // Xóa assignment detail không còn trong assignment và xóa assignment detail dto đã có trong assignment
         for (int i = 0; i < assignmentDetails.size(); i++) {
             boolean isExists = false;
-            for (int j = 0; j < assignmentDetailDTOList.size(); j++) {
-                // Asset không còn trong assignment thì xóa assignment detail đó
-                if (assignmentDetailDTOList.get(j).getAssetCode().equalsIgnoreCase(assignmentDetails.get(i).getAsset().getAssetCode())) {
-                    isExists = true;
-                    assignmentDetailDTOList.remove(j);
-                    j--;
+            if(assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
+                for (int j = 0; j < assignmentDetailDTOs.size(); j++) {
+                    if (assignmentDetailDTOs.get(j).getAssetCode().equalsIgnoreCase(assignmentDetails.get(i).getAsset().getAssetCode())) {
+                        isExists = true;
+                        assignmentDetailDTOs.remove(j);
+                        j--;
+                    }
                 }
-            }
-            if (isExists == false) {
-                assignmentDetails.remove(i);
-                i--;
+
+                if (isExists == false) {
+                    assignmentDetails.remove(i);
+                    i--;
+                }
             }
         }
 
-        for (int i = 0; i < assignmentDetailDTOList.size(); i++) {
-            AssetEntity asset = assetRepository.getById(assignmentDetailDTOList.get(i).getAssetCode());
+        for (int i = 0; i < assignmentDetailDTOs.size(); i++) {
+            AssetEntity asset = assetRepository.findById(assignmentDetailDTOs.get(i).getAssetCode())
+                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
             AssignmentDetailEntity newAssignmentDetail = new AssignmentDetailEntity();
             newAssignmentDetail.setAsset(asset);
             newAssignmentDetail.setAssignment(assignment);
@@ -229,33 +255,27 @@ public class AssignmentServiceImpl implements AssignmentService {
             assignmentDetails.add(newAssignmentDetail);
         }
 
-        UserDetailEntity assignTo = assignment.getAssignTo();
-        UserDetailEntity assignBy;
-
-        // case: new assign to
-        if (!assignment.getAssignTo().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedTo())) {
-            assignTo = userRepository.findByUserName(assignmentDTO.getAssignedTo())
-                    .orElseThrow(() -> new ResourceNotFoundException("AssignTo not found!")).getUserDetail();
-            assignment.setAssignTo(assignTo);
-        }
-
-        // case: new assign by
-        if (!assignment.getAssignBy().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedBy())) {
-            assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
-                    .orElseThrow(() -> new ResourceNotFoundException("AssignBy not found!")).getUserDetail();
-            assignment.setAssignBy(assignBy);
-
-            // check location
-            if (assignTo.getLocation() != assignBy.getLocation()) {
-                throw new ConflictException("The location of assignTo difference from admin!");
+        for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository
+                    .getById(assignmentDetail.getAsset().getAssetCode()).getAssignmentDetails()
+                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
+                    .collect(Collectors.toList());
+            for (AssignmentDetailEntity a : assetAssignmentDetails) {
+                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
+                    if (!(assignmentDTO.getIntendedReturnDate().before(a.getAssignment().getAssignedDate())
+                            || assignmentDTO.getAssignedDate().after(a.getAssignment().getIntendedReturnDate()))) {
+                        throw new ConflictException("Asset not available in this time!");
+                    }
+                } else {
+                    throw new ConflictException("Date invalid!");
+                }
             }
         }
 
-        assignment.setAssignedDate(assignmentDTO.getAssignedDate());
-        assignment.setIntendedReturnDate(assignmentDTO.getIntendedReturnDate());
         assignment.setNote(assignmentDTO.getNote());
+        assignment.setIntendedReturnDate(assignmentDTO.getIntendedReturnDate());
+        assignment.setUpdatedDate(new Date());
         assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
-//        assignment.setCreatedDate(new Date());
 
 //        SimpleMailMessage msg = new SimpleMailMessage();
 //        msg.setTo(assignTo.getEmail());
@@ -266,28 +286,24 @@ public class AssignmentServiceImpl implements AssignmentService {
 //                "\nDate: "+dateFormatter.format(assignment.getAssignedDate())+
 //                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
 //        javaMailSender.send(msg);
+
         return new AssignmentDTO(assignmentRepository.save(assignment));
     }
 
     @Override
     public boolean deleteAssignment(Long assignmentId, LocationEntity location) {
-//        AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
-//                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
-//
-//        if (!assignment.getAssignBy().getLocation().equals(location)) { // compare object !!!!
-//            throw new BadRequestException("Invalid access!");
-//        }
-//
-//        if (assignment.getState() == AssignmentState.ACCEPTED) {
-//            throw new BadRequestException("Assignment delete when state is Waiting for acceptance or Declined!");
-//        }
-//
-//        AssetEntity assetEntity = assetRepository.getById(assignment.getAssetEntity().getAssetCode());
-//        if(assignment.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) // if assignment is waiting for acceptance then set asset state is available
-//            assetEntity.setState(AssetState.AVAILABLE);
-//        assetRepository.save(assetEntity);
-//
-//        assignmentRepository.deleteById(assignmentId);
+        AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
+
+        if (!assignment.getAssignBy().getLocation().equals(location)) {
+            throw new BadRequestException("Invalid access!");
+        }
+
+        if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE) {
+            throw new BadRequestException("Assignment delete when state is waiting for acceptance!");
+        }
+
+        assignmentRepository.deleteById(assignmentId);
         return true;
     }
 
@@ -300,16 +316,14 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE)
             throw new BadRequestException("Assignment updated when state is Waiting for acceptance!");
 
-//        AssetEntity asset = assignment.getAssetEntity();
-//        if (assignmentDTO.getState() == AssignmentState.DECLINED) { // set asset's state is available when user decline assignment
-//            asset.setState(AssetState.AVAILABLE);
             assignment.setNote(assignmentDTO.getNote());
             for (AssignmentDetailEntity a : assignment.getAssignmentDetails()) {
-                a.setState(assignmentDTO.getState());
+                if(a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
+                    a.setState(assignmentDTO.getState());
+                }
             }
 
         assignment.setState(assignmentDTO.getState());
-//        assignment.setAssetEntity(asset);
         return new AssignmentDTO(assignmentRepository.save(assignment));
     }
 }

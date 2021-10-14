@@ -31,27 +31,26 @@ public class RequestReturnDTO {
     private Long assignmentId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date assignedDate;
-//    private List<RequestReturnDetailDTO> requestReturnDetails = new ArrayList<>();
+    private List<AssignmentDetailDTO> assignmentDetails = new ArrayList<>();
 
     public RequestReturnDTO(RequestReturnEntity entity) {
-//        this.id = entity.getId();
-//        this.note = entity.getNote();
-//        this.state = entity.getState();
-//        this.requestedDate = entity.getRequestedDate();
-//        this.returnedDate = entity.getReturnedDate();
-//        this.requestBy = entity.getRequestBy().getUser().getUserName();
-//        if(entity.getAcceptBy() != null)
-//            this.acceptBy = entity.getAcceptBy().getUser().getUserName();
-//        this.assignmentId = entity.getAssignment().getId();
-//        this.assignedDate = entity.getAssignment().getAssignedDate();
-//        this.requestReturnDetails = entity.getRequestReturnDetails().stream().map(RequestReturnDetailDTO::new).collect(Collectors.toList());
+        this.id = entity.getId();
+        this.note = entity.getNote();
+        this.state = entity.getState();
+        this.requestedDate = entity.getRequestedDate();
+        this.returnedDate = entity.getReturnedDate();
+        this.requestBy = entity.getRequestBy().getUser().getUserName();
+        if(entity.getAcceptBy() != null)
+            this.acceptBy = entity.getAcceptBy().getUser().getUserName();
+        this.assignmentId = entity.getAssignment().getId();
+        this.assignedDate = entity.getAssignment().getAssignedDate();
+        this.assignmentDetails = entity.getAssignmentDetails().stream().map(AssignmentDetailDTO::new).collect(Collectors.toList());
     }
 
     public RequestReturnEntity toEntity() {
         RequestReturnEntity entity = new RequestReturnEntity();
         entity.setNote(this.note);
         entity.setState(this.state);
-        entity.setReturnedDate(entity.getReturnedDate());
         return entity;
     }
 }

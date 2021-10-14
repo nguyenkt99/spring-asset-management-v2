@@ -1,5 +1,6 @@
 package com.nashtech.AssetManagement_backend.service.Impl;
 
+import com.nashtech.AssetManagement_backend.dto.AssignmentDetailDTO;
 import com.nashtech.AssetManagement_backend.dto.RequestReturnDTO;
 //import com.nashtech.AssetManagement_backend.dto.RequestReturnDetailDTO;
 import com.nashtech.AssetManagement_backend.entity.*;
@@ -36,13 +37,14 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 
     @Override
     public RequestReturnDTO create(RequestReturnDTO requestReturnDTO) {
+        List<AssignmentDetailEntity> assignmentDetailsForReturn = new ArrayList<>();
         RequestReturnEntity requestReturn = requestReturnDTO.toEntity();
-//        List<RequestReturnDetailEntity> requestReturnDetails = new ArrayList<>();
         AssignmentEntity assignment = assignmentRepository.findById(requestReturnDTO.getAssignmentId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
         if (assignment.getState() != AssignmentState.ACCEPTED) {
             throw new ConflictException("Assignment must have accepted state!");
         }
+        List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
 
         UserDetailEntity requestBy = userRepository.getByUserName(requestReturnDTO.getRequestBy()).getUserDetail();
         if(!requestBy.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) { // requestedBy is not admin
@@ -51,39 +53,43 @@ public class RequestReturnServiceImpl implements RequestReturnService {
             }
         }
 
-//        requestReturn.setRequestedDate(new Date());
-//        requestReturn.setRequestBy(requestBy);
-//        requestReturn.setState(RequestReturnState.WAITING_FOR_RETURNING);
-//        for(RequestReturnDetailDTO r : requestReturnDTO.getRequestReturnDetails()) {
-//            AssignmentDetailEntity assignmentDetail = assignmentDetailRepository.findById(r.getAssignmentDetailId())
-//                    .orElseThrow(()-> new ResourceNotFoundException("Assignment detail not found!"));
-//            RequestReturnDetailEntity requestReturnDetail = new RequestReturnDetailEntity();
-//            requestReturnDetail.setRequestReturn(requestReturn);
-//            requestReturnDetail.setAssignmentDetail(assignmentDetail);
-//            requestReturnDetails.add(requestReturnDetail);
+        for(AssignmentDetailDTO assignmentDetailDTO : requestReturnDTO.getAssignmentDetails()) {
+            for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+                if(assignmentDetailDTO.getAssetCode().equals(assignmentDetail.getAsset().getAssetCode())) {
+                    assignmentDetail.setState(AssignmentState.WAITING_FOR_RETURNING);
+                    assignmentDetail.setRequestReturn(requestReturn);
+                    assignmentDetailsForReturn.add(assignmentDetail);
+                }
+            }
+        }
+
+        requestReturn.setState(RequestReturnState.WAITING_FOR_RETURNING);
+        requestReturn.setRequestedDate(new Date());
+        requestReturn.setRequestBy(requestBy);
+        requestReturn.setAssignment(assignment);
+        requestReturn.setAssignmentDetails(assignmentDetailsForReturn);
+
+
+//        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
+//        {
+//            SimpleMailMessage msg = new SimpleMailMessage();
+//            msg.setTo(assignment.getAssignTo().getEmail());
+//            msg.setSubject("Returning Asset");
+//            msg.setText("Your administrator need you to return assets to the company: " +
+//                    "" +
+//                    "\nAsset" +
+//                    " " +
+//                    "code: " + assignment.getAssetEntity().getAssetCode()+
+//                    "\nAsset name: " + assignment.getAssetEntity().getAssetName()+
+//                    "\nRequested Date: " + format.format(request.getRequestedDate())+
+//                    "\nYou must return it within 3 days." +
+//                    "\nPlease check your request by your account\nKind Regards," +
+//                    "\nAdministrator");
+//            javaMailSender.send(msg);
 //        }
-//        requestReturn.setRequestReturnDetails(requestReturnDetails);
-//        requestReturn.setAssignment(assignment);
-//
-////        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
-////        {
-////            SimpleMailMessage msg = new SimpleMailMessage();
-////            msg.setTo(assignment.getAssignTo().getEmail());
-////            msg.setSubject("Returning Asset");
-////            msg.setText("Your administrator need you to return assets to the company: " +
-////                    "" +
-////                    "\nAsset" +
-////                    " " +
-////                    "code: " + assignment.getAssetEntity().getAssetCode()+
-////                    "\nAsset name: " + assignment.getAssetEntity().getAssetName()+
-////                    "\nRequested Date: " + format.format(request.getRequestedDate())+
-////                    "\nYou must return it within 3 days." +
-////                    "\nPlease check your request by your account\nKind Regards," +
-////                    "\nAdministrator");
-////            javaMailSender.send(msg);
-////        }
-//        assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
-////        request.setAssignmentEntity(assignment);
+
+        if(!assignmentDetails.stream().anyMatch(x->x.getRequestReturn() == null))
+            assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
         return new RequestReturnDTO(requestReturnRepository.save(requestReturn));
     }
 
