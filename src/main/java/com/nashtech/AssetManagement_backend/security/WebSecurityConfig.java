@@ -75,15 +75,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
-                .antMatchers(HttpMethod.POST,"/api/request-assign").hasRole("STAFF")
-                .antMatchers(HttpMethod.DELETE,"/api/request-assign/**").hasRole("STAFF")
-                .antMatchers(HttpMethod.PUT,"/api/request-assign/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PATCH,"/api/request-assign/**").hasRole("ADMIN")
+                .antMatchers("/api/request-assign/**").hasRole("STAFF")
                 .antMatchers(HttpMethod.GET,"/api/category").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers("/api/assignment/home", "/api/users/profile").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers(HttpMethod.POST, "/api/request").hasAnyRole("ADMIN", "STAFF")
+                .antMatchers(HttpMethod.POST, "/api/request-return").hasAnyRole("ADMIN", "STAFF")
+                .antMatchers(HttpMethod.DELETE, "/api/request-return/**").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers(HttpMethod.PUT, "/api/assignment/staff/**").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers("/api/role", "/api/users/**", "/api/category", "/api/asset/**", "/api/assignment/**",
-                        "/api/request", "/api/report").hasRole("ADMIN")
+                        "/api/request-return", "/api/report", "/api/repair").hasRole("ADMIN")
                 .anyRequest().authenticated();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

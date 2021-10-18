@@ -9,7 +9,7 @@ public interface RequestReturnService {
 
     List<RequestReturnDTO> getAllByAdminLocation(String adminUsername);
 
-    void delete(Long id);
+    void delete(Long id, String username);
 
     RequestReturnDTO accept(Long requestId, String staffCode);
 }

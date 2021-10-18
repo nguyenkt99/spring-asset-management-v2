@@ -31,6 +31,9 @@ public class RequestAssignEntity {
     @Column(name = "requested_date")
     private Date requestedDate;
 
+    @Column(name = "updated_date")
+    private Date updatedDate;
+
     @Column(name = "intended_assign_date")
     private Date intendedAssignDate;
 

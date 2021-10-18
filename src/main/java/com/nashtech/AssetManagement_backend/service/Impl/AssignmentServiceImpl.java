@@ -127,6 +127,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
             AssetEntity asset = assetRepository.getById(assignmentDetailDTO.getAssetCode());
             AssignmentDetailEntity assignmentDetail = new AssignmentDetailEntity();
+            asset.setState(AssetState.ASSIGNED);
             assignmentDetail.setAsset(asset);
             assignmentDetail.setAssignment(assignment);
             assignmentDetail.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
@@ -182,7 +183,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         UserDetailEntity assignTo = assignment.getAssignTo();
         UserDetailEntity assignBy;
-        if(assignment.getAssignmentDetails().stream()
+        if (assignment.getAssignmentDetails().stream()
                 .allMatch(a -> a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE)) {
             // check assigned date and intended date must be today or future
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -229,7 +230,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         for (int i = 0; i < assignmentDetails.size(); i++) {
             boolean isExists = false;
-            if(assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
+            if (assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
                 for (int j = 0; j < assignmentDetailDTOs.size(); j++) {
                     if (assignmentDetailDTOs.get(j).getAssetCode().equalsIgnoreCase(assignmentDetails.get(i).getAsset().getAssetCode())) {
                         isExists = true;
@@ -239,6 +240,15 @@ public class AssignmentServiceImpl implements AssignmentService {
                 }
 
                 if (isExists == false) {
+                    AssetEntity asset = assignmentDetails.get(i).getAsset();
+//                    if (asset.getAssignmentDetails().stream().allMatch(a -> a.getId() != assignmentDetails.get(index).getId() && (a.getState() == AssignmentState.COMPLETED
+//                            || a.getState() == AssignmentState.DECLINED))) {
+//                        asset.setState(AssetState.AVAILABLE);
+//                    }
+
+                    // Check all assignment detail to set asset state is available!!!
+                    updateAvailableAssetState(assignmentDetails.get(i));
+
                     assignmentDetails.remove(i);
                     i--;
                 }
@@ -249,12 +259,14 @@ public class AssignmentServiceImpl implements AssignmentService {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTOs.get(i).getAssetCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
             AssignmentDetailEntity newAssignmentDetail = new AssignmentDetailEntity();
+            asset.setState(AssetState.ASSIGNED);
             newAssignmentDetail.setAsset(asset);
             newAssignmentDetail.setAssignment(assignment);
             newAssignmentDetail.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
             assignmentDetails.add(newAssignmentDetail);
         }
 
+        // check all assignment detail if update assign date or return date!!!
         for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
             List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository
                     .getById(assignmentDetail.getAsset().getAssetCode()).getAssignmentDetails()
@@ -291,16 +303,18 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public boolean deleteAssignment(Long assignmentId, LocationEntity location) {
+    public boolean deleteAssignment(Long assignmentId) {
         AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
 
-        if (!assignment.getAssignBy().getLocation().equals(location)) {
-            throw new BadRequestException("Invalid access!");
-        }
-
         if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE) {
             throw new BadRequestException("Assignment delete when state is waiting for acceptance!");
+        }
+
+        List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
+        for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+            // Check all assignment detail to set asset state is available!!!
+            updateAvailableAssetState(assignmentDetail);
         }
 
         assignmentRepository.deleteById(assignmentId);
@@ -316,14 +330,34 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE)
             throw new BadRequestException("Assignment updated when state is Waiting for acceptance!");
 
-            assignment.setNote(assignmentDTO.getNote());
-            for (AssignmentDetailEntity a : assignment.getAssignmentDetails()) {
-                if(a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
-                    a.setState(assignmentDTO.getState());
+        assignment.setNote(assignmentDTO.getNote());
+        for (AssignmentDetailEntity a : assignment.getAssignmentDetails()) {
+            if (a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
+                a.setState(assignmentDTO.getState());
+
+                if(assignmentDTO.getState() == AssignmentState.DECLINED) {
+                    // Check all assignment detail to set asset state is available!!!
+                    updateAvailableAssetState(a);
                 }
             }
+        }
+
+
 
         assignment.setState(assignmentDTO.getState());
         return new AssignmentDTO(assignmentRepository.save(assignment));
+    }
+
+    public void updateAvailableAssetState(AssignmentDetailEntity assignmentDetail) {
+        List<AssignmentDetailEntity> allAssetAssignments = assignmentDetail.getAsset().getAssignmentDetails();
+        for (int i = 0; i < allAssetAssignments.size(); i++) {
+            if (allAssetAssignments.get(i).getAssignment().getId() != assignmentDetail.getAssignment().getId()
+                    && (allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE ||
+                    allAssetAssignments.get(i).getState() == AssignmentState.ACCEPTED ||
+                    allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_RETURNING
+            )) break;
+            if (i == allAssetAssignments.size() - 1)
+                allAssetAssignments.get(i).getAsset().setState(AssetState.AVAILABLE);
+        }
     }
 }

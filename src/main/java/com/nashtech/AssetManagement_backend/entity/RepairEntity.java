@@ -19,19 +19,22 @@ public class RepairEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "note")
+    private String note;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "state", length = 30)
-    private RequestReturnState state;
+    private RepairState state;
 
     @ManyToOne
     @JoinColumn(name="asset_code")
     private AssetEntity asset;
 
-    @Column(name = "requested_date")
-    private Date requestedDate;
+    @Column(name = "started_date")
+    private Date startedDate;
 
-    @Column(name = "repaired_date")
-    private Date repairedDate;
+    @Column(name = "finished_date")
+    private Date finishedDate;
 
     @ManyToOne
     @JoinColumn(name="repair_by")

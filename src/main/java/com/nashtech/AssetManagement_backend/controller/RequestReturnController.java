@@ -5,6 +5,7 @@ import com.nashtech.AssetManagement_backend.security.services.UserDetailsImpl;
 import com.nashtech.AssetManagement_backend.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,8 +15,8 @@ import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/request")
-public class RequestController {
+@RequestMapping("/api/request-return")
+public class RequestReturnController {
     @Autowired
     RequestReturnService requestService;
 
@@ -38,8 +39,8 @@ public class RequestController {
     }
 
     @DeleteMapping("/{requestId}")
-    public ResponseEntity<?> cancelRequest(@PathVariable Long requestId) {
-        requestService.delete(requestId);
+    public ResponseEntity<?> cancelRequest(@PathVariable Long requestId, Authentication authentication) {
+        requestService.delete(requestId, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }

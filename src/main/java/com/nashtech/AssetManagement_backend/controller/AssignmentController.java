@@ -67,8 +67,7 @@ public class AssignmentController {
     @DeleteMapping("/{assignmentId}")
     public ResponseEntity<Map<String, Boolean>> deleteCategory(Authentication authentication,
                                                                @PathVariable("assignmentId") Long assignmentId) {
-        LocationEntity location = userService.getLocationByUserName(authentication.getName());
-        assignmentService.deleteAssignment(assignmentId, location);
+        assignmentService.deleteAssignment(assignmentId);
         Map<String, Boolean> map = new HashMap<>();
         map.put("success", true);
         return new ResponseEntity<>(map, HttpStatus.OK);

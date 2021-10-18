@@ -7,9 +7,7 @@ import java.util.stream.Collectors;
 import com.nashtech.AssetManagement_backend.dto.UserDto;
 import com.nashtech.AssetManagement_backend.entity.UserDetailEntity;
 import com.nashtech.AssetManagement_backend.entity.UserState;
-import com.nashtech.AssetManagement_backend.entity.UsersEntity;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
-import com.nashtech.AssetManagement_backend.handleException.RuntimeExceptionHandle;
 import com.nashtech.AssetManagement_backend.payload.request.LoginRequest;
 import com.nashtech.AssetManagement_backend.payload.response.JwtResponse;
 import com.nashtech.AssetManagement_backend.security.jwt.JwtUtils;
@@ -99,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
                 return false;
             }
         } catch (Exception e) {
-            new RuntimeExceptionHandle(e.toString());
+            throw new RuntimeException(e.getMessage());
         }
         return false;
     }

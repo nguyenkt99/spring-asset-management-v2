@@ -11,10 +11,14 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AssetRepository extends JpaRepository<AssetEntity, String> {
-//    AssetEntity getByAssetName(String assetName);
     Optional<AssetEntity> findByAssetName(String assetName);
     Optional<AssetEntity> findByAssetCode(String assetCode);
 
+    @Query("select a " +
+            "from AssetEntity a " +
+            "where a.location.id = ?1 " +
+            "order by a.assetCode asc")
+    List<AssetEntity> findAll(long locationId);
 
     int countByCategoryEntityAndLocation(CategoryEntity category, LocationEntity location);
 

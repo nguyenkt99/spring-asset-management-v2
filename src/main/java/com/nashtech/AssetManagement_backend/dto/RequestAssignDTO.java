@@ -25,6 +25,8 @@ public class RequestAssignDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date requestedDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private Date updatedDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date intendedAssignDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date intendedReturnDate;
@@ -36,6 +38,7 @@ public class RequestAssignDTO {
         this.note = entity.getNote();
         this.state = entity.getState();
         this.requestedDate = entity.getRequestedDate();
+        this.updatedDate = entity.getUpdatedDate();
         this.intendedAssignDate = entity.getIntendedAssignDate();
         this.intendedReturnDate = entity.getIntendedReturnDate();
         this.requestedBy = entity.getRequestBy().getUser().getUserName();

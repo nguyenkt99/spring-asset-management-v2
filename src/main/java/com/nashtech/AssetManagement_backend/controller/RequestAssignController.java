@@ -28,12 +28,19 @@ public class RequestAssignController {
         return requestAssignService.getAll(authentication.getName());
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> acceptRequest(@PathVariable Long id,
-                                                    @RequestBody RequestAssignDTO requestAssignDTO,
-                                                    Authentication authentication) {
+    @PutMapping("/{requestAssignId}")
+    public RequestAssignDTO edit(@Valid @RequestBody RequestAssignDTO requestAssignDTO, @PathVariable Long requestAssignId, Authentication authentication) {
+        requestAssignDTO.setId(requestAssignId);
+        requestAssignDTO.setRequestedBy(authentication.getName());
+        return requestAssignService.update(requestAssignDTO);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> handleRequestAssign(@PathVariable Long id,
+                                           @RequestBody RequestAssignDTO requestAssignDTO,
+                                           Authentication authentication) {
         requestAssignDTO.setId(id);
-        return requestAssignService.updateState(requestAssignDTO);
+        return requestAssignService.handleRequestAssign(requestAssignDTO);
     }
 
     @DeleteMapping("/{id}")

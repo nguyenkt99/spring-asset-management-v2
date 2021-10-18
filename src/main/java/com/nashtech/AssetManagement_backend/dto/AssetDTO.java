@@ -1,9 +1,7 @@
 package com.nashtech.AssetManagement_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.nashtech.AssetManagement_backend.entity.AssetEntity;
-import com.nashtech.AssetManagement_backend.entity.AssetState;
-import com.nashtech.AssetManagement_backend.entity.Location;
+import com.nashtech.AssetManagement_backend.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AssetDTO {
+    private static Date current = new Date();
     private String assetCode;
     @NotBlank(message = "asset name can not be empty")
     @Length(max = 50)
@@ -35,36 +35,38 @@ public class AssetDTO {
     @Length(min = 2, max = 2, message = "length is 2.")
     private String categoryPrefix;
     private String categoryName;
-
+    private Boolean isFreeToday = true;
     private List<AssignmentDetailDTO> assignmentDetailDTOList = new ArrayList<>();
 
-    public static AssetDTO toDTO(AssetEntity asset){
-        if (asset == null)
-            return null;
-        AssetDTO dto = new AssetDTO();
-        dto.setAssetCode(asset.getAssetCode());
-        dto.setLocation(asset.getLocation().getName());
-        dto.setAssetName(asset.getAssetName());
-        dto.setSpecification(asset.getSpecification());
-        dto.setCategoryPrefix(asset.getCategoryEntity().getPrefix());
-        dto.setInstalledDate(asset.getInstalledDate());
-        dto.setState(asset.getState());
-        dto.setCategoryName(asset.getCategoryEntity().getName());
-        dto.setAssignmentDetailDTOList(asset.getAssignmentDetails()
-            .stream().map(AssignmentDetailDTO::new).collect(Collectors.toList()));
+    public AssetDTO(AssetEntity asset) {
+        this.assetCode = asset.getAssetCode();
+        this.assetName = asset.getAssetName();
+        this.location = asset.getLocation().getName();
+        this.specification = asset.getSpecification();
+        this.categoryPrefix = asset.getCategoryEntity().getPrefix();
+        this.categoryName = asset.getCategoryEntity().getName();
+        this.installedDate = asset.getInstalledDate();
+        this.state = asset.getState();
+        List<AssignmentDetailEntity> assignmentDetails = asset.getAssignmentDetails();
+        for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+            if(assignmentDetail.getState() != AssignmentState.COMPLETED && assignmentDetail.getState() != AssignmentState.DECLINED) {
+                if(assignmentDetail.getAssignment().getAssignedDate().before(current)
+                        && assignmentDetail.getAssignment().getIntendedReturnDate().after(current)) {
+                    this.isFreeToday = false;
+                }
+            }
+        }
 
-
-        return dto;
+        this.assignmentDetailDTOList = asset.getAssignmentDetails()
+            .stream().map(AssignmentDetailDTO::new).collect(Collectors.toList());
     }
 
-    public static AssetEntity toEntity(AssetDTO dto){
-        if (dto == null)
-            return null;
+    public AssetEntity toEntity(){
         AssetEntity asset = new AssetEntity();
-        asset.setAssetName(dto.getAssetName());
-        asset.setInstalledDate(dto.getInstalledDate());
-        asset.setState(dto.getState());
-        asset.setSpecification(dto.getSpecification());
+        asset.setAssetName(this.assetName);
+        asset.setInstalledDate(this.installedDate);
+        asset.setState(this.state);
+        asset.setSpecification(this.specification);
         return asset;
     }
 }

@@ -19,13 +19,13 @@ public interface UserService {
 
     UserDto changePassword(String username, String passwordEncode);
 
-    UserDto saveUser(UserDto userDto, String username) throws BadRequestException;
+    UserDto saveUser(UserDto userDto, String username);
 
     List<UserDto> retrieveUsers(LocationEntity location);
 
 //    List<UserDto> retrieveUsers(Pageable pageable);
 
-    UserDto getUserByStaffCode(String staffCode, LocationEntity location) throws ResourceNotFoundException;
+    UserDto getUserByStaffCode(String staffCode, LocationEntity location);
 
     UserDto updateUser(UserDto userDto);
 

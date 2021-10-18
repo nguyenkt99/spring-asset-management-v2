@@ -2,7 +2,6 @@ package com.nashtech.AssetManagement_backend.service.Impl;
 
 import com.nashtech.AssetManagement_backend.dto.AssignmentDetailDTO;
 import com.nashtech.AssetManagement_backend.dto.RequestReturnDTO;
-//import com.nashtech.AssetManagement_backend.dto.RequestReturnDetailDTO;
 import com.nashtech.AssetManagement_backend.entity.*;
 import com.nashtech.AssetManagement_backend.exception.BadRequestException;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
@@ -24,13 +23,13 @@ public class RequestReturnServiceImpl implements RequestReturnService {
     RequestReturnRepository requestReturnRepository;
 
     @Autowired
-    AssignmentDetailRepository assignmentDetailRepository;
-
-    @Autowired
     AssignmentRepository assignmentRepository;
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    AssignmentServiceImpl assignmentService;
 
     @Autowired
     JavaMailSender javaMailSender;
@@ -69,7 +68,6 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         requestReturn.setAssignment(assignment);
         requestReturn.setAssignmentDetails(assignmentDetailsForReturn);
 
-
 //        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
 //        {
 //            SimpleMailMessage msg = new SimpleMailMessage();
@@ -104,37 +102,65 @@ public class RequestReturnServiceImpl implements RequestReturnService {
     }
 
     @Override
-    public void delete(Long id) {
-        RequestReturnEntity request = requestReturnRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
-        if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
-            throw new ConflictException("Request must be waiting for returning!");
-//        request.getAssignmentEntity().setState(AssignmentState.ACCEPTED);
+    public void delete(Long id, String username) {
+        UsersEntity requestBy = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
+        RequestReturnEntity requestReturn = requestReturnRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(REQUEST_NOT_FOUND_ERROR));
+        if (!requestReturn.getState().equals(RequestReturnState.WAITING_FOR_RETURNING)) {
+            throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
+        }
+
+        if(!requestBy.getUserName().equals(requestReturn.getRequestBy().getUser().getUserName())) {
+            throw new BadRequestException("The request wasn't created by user so cannot delete!");
+        }
+
+        AssignmentEntity assignment = requestReturn.getAssignment();
+        List<AssignmentDetailEntity> assignmentDetails = requestReturn.getAssignmentDetails();
+        for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+            if(assignmentDetail.getRequestReturn().getId() == requestReturn.getId()) {
+                assignmentDetail.setState(AssignmentState.ACCEPTED);
+                assignmentDetail.setRequestReturn(null);
+            }
+        }
+
+        if(assignmentDetails.stream().anyMatch(x->x.getRequestReturn() == null))
+            assignment.setState(AssignmentState.ACCEPTED);
+        requestReturnRepository.save(requestReturn);
+        requestReturn.setAssignment(null);
+        requestReturn.setAssignmentDetails(null);
         requestReturnRepository.deleteById(id);
     }
 
     @Override
     public RequestReturnDTO accept(Long id, String staffCode) {
-        RequestReturnEntity request = requestReturnRepository.findById(id)
+        RequestReturnEntity requestReturn = requestReturnRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(REQUEST_NOT_FOUND_ERROR));
-        if (!request.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
+        if (!requestReturn.getState().equals(RequestReturnState.WAITING_FOR_RETURNING))
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
-        request.setState(RequestReturnState.COMPLETED);
-        request.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
-        request.setReturnedDate(new Date());
-        requestReturnRepository.save(request);
-//        AssignmentEntity assignment = request.getAssignmentEntity();
-//        AssetEntity asset = assignment.getAssetEntity();
-//        asset.setState(AssetState.AVAILABLE);
-//        assignment.setAssetEntity(asset);
-//        assignment.setState(AssignmentState.COMPLETED);
-//        if(request.getRequestBy().getUser().getRole().equals(RoleName.ROLE_STAFF))
+
+        AssignmentEntity assignment = requestReturn.getAssignment();
+        for(AssignmentDetailEntity assignmentDetail : assignment.getAssignmentDetails()) {
+            if(assignmentDetail.getState() == AssignmentState.WAITING_FOR_RETURNING) {
+                assignmentDetail.setState(AssignmentState.COMPLETED);
+                assignmentService.updateAvailableAssetState(assignmentDetail);
+            }
+        }
+
+        if(!assignment.getAssignmentDetails().stream().anyMatch(x->x.getState() == null))
+            assignment.setState(AssignmentState.COMPLETED);
+        requestReturn.setAssignment(assignment);
+        requestReturn.setReturnedDate(new Date());
+        requestReturn.setState(RequestReturnState.COMPLETED);
+        requestReturn.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
+
+//        if(requestReturn.getRequestBy().getUser().getRole().equals(RoleName.ROLE_STAFF))
 //        {
 //            SimpleMailMessage msg = new SimpleMailMessage();
 //            msg.setTo(assignment.getAssignTo().getEmail());
 //            msg.setSubject("Your request ");
 //            msg.setText("Administrator has been accepted your request: " +
-//                    "\nRequestID: "+request.getId()+
+//                    "\nRequestID: "+requestReturn.getId()+
 //                    "\nAsset code: "+assignment.getAssetEntity().getAssetCode()+
 //                    "\nAsset name: "+ assignment.getAssetEntity().getAssetName()+
 //                    "\nRequest state: "+request.getState()+
@@ -142,8 +168,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 //                    "\nAdministrator");
 //            javaMailSender.send(msg);
 //        }
-//        assignmentRepository.save(assignment);
-        return new RequestReturnDTO(request);
+        return new RequestReturnDTO(requestReturnRepository.save(requestReturn));
     }
 
     private final String REQUEST_NOT_FOUND_ERROR = "Request not found.";

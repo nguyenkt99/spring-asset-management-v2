@@ -45,7 +45,7 @@ public class UserController {
     }
 
     @PostMapping("")
-    public ResponseEntity<UserDto> addUser(Authentication authentication, @Valid @RequestBody UserDto userDto) throws ParseException {
+    public ResponseEntity<UserDto> addUser(Authentication authentication, @Valid @RequestBody UserDto userDto) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return new ResponseEntity<>(userService.saveUser(userDto, userDetails.getUsername()), HttpStatus.CREATED);
     }

@@ -32,7 +32,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
     public RequestAssignDTO save(RequestAssignDTO requestAssignDTO) {
         RequestAssignEntity requestAssign = requestAssignDTO.toEntity();
 
-        List<RequestAssignDetailEntity> assignmentDetails = requestAssign.getRequestAssignDetails();
+        List<RequestAssignDetailEntity> requestAssignDetails = requestAssign.getRequestAssignDetails();
         for(RequestAssignDetailDTO r : requestAssignDTO.getRequestAssignDetails()) {
             RequestAssignDetailEntity requestAssignDetail = new RequestAssignDetailEntity();
             CategoryEntity category = categoryRepository.findById(r.getCategoryId())
@@ -45,7 +45,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
             requestAssignDetail.setCategory(category);
             requestAssignDetail.setRequestAssign(requestAssign);
             requestAssignDetail.setQuantity(r.getQuantity());
-            assignmentDetails.add(requestAssignDetail);
+            requestAssignDetails.add(requestAssignDetail);
         }
 
         UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
@@ -53,6 +53,67 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
         requestAssign.setRequestBy(requestBy);
         requestAssign.setRequestedDate(new Date());
+        requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
+        requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
+        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
+    }
+
+    @Override
+    public RequestAssignDTO update(RequestAssignDTO requestAssignDTO) {
+        RequestAssignEntity requestAssign = requestAssignRepository.findById(requestAssignDTO.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Request assign not found!"));
+        if(requestAssign.getState() != RequestAssignState.WAITING_FOR_ASSIGNING) {
+            throw new BadRequestException("Request for assigning can be update when is waiting for assigning state!");
+        }
+
+        List<RequestAssignDetailEntity> requestAssignDetails = requestAssign.getRequestAssignDetails();
+        List<RequestAssignDetailDTO> requestAssignDetailDTOs = requestAssignDTO.getRequestAssignDetails();
+
+        for(int i = 0; i < requestAssignDetails.size(); i++) {
+            boolean isNoLonger = true;
+            for(RequestAssignDetailDTO requestAssignDetailDTO : requestAssignDetailDTOs) {
+                if (requestAssignDetailDTO.getCategoryId().equals(requestAssignDetails.get(i).getCategory().getPrefix())) {
+                    isNoLonger = false;
+                }
+            }
+
+            if(isNoLonger) {
+                requestAssignDetails.remove(i);
+                --i;
+            }
+        }
+
+        for(RequestAssignDetailDTO requestAssignDetailDTO : requestAssignDTO.getRequestAssignDetails()) {
+            boolean isExists = false;
+            for(RequestAssignDetailEntity requestAssignDetail : requestAssignDetails) {
+                if(requestAssignDetail.getCategory().getPrefix().equals(requestAssignDetailDTO.getCategoryId())) {
+                    isExists = true;
+                    int sumOfAvailableAsset = categoryRepository.getSumOfAvailableAssetByCategory(requestAssignDetailDTO.getCategoryId()
+                            , requestAssignDTO.getIntendedAssignDate(), requestAssignDTO.getIntendedReturnDate());
+                    if(requestAssignDetailDTO.getQuantity() > sumOfAvailableAsset) {
+                        throw new ConflictException("Asset not enough!");
+                    }
+                    requestAssignDetail.setQuantity(requestAssignDetailDTO.getQuantity());
+                    break;
+                }
+            }
+            if(!isExists) {
+                RequestAssignDetailEntity newRequestAssignDetail = new RequestAssignDetailEntity();
+                CategoryEntity category = categoryRepository.findById(requestAssignDetailDTO.getCategoryId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
+                int sumOfAvailableAsset = categoryRepository.getSumOfAvailableAssetByCategory(category.getPrefix()
+                        , requestAssignDTO.getIntendedAssignDate(), requestAssignDTO.getIntendedReturnDate());
+                if(requestAssignDetailDTO.getQuantity() > sumOfAvailableAsset) {
+                    throw new ConflictException("Asset not enough!");
+                }
+                newRequestAssignDetail.setCategory(category);
+                newRequestAssignDetail.setQuantity(requestAssignDetailDTO.getQuantity());
+                newRequestAssignDetail.setRequestAssign(requestAssign);
+                requestAssignDetails.add(newRequestAssignDetail);
+            }
+        }
+
+        requestAssign.setUpdatedDate(new Date());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
         return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
@@ -74,7 +135,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
     }
 
     @Override
-    public ResponseEntity<?> updateState(RequestAssignDTO requestAssignDTO) {
+    public ResponseEntity<?> handleRequestAssign(RequestAssignDTO requestAssignDTO) {
         if(requestAssignDTO.getState() == null) {
             throw new BadRequestException("State is invalid!");
         }
@@ -84,15 +145,18 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         if (requestAssign.getState() != RequestAssignState.WAITING_FOR_ASSIGNING)
             throw new BadRequestException("Request for assigning can be update when state is waiting for assigning!");
 
-        // if admin accept then delete this
-        if(requestAssignDTO.getState().equals(RequestAssignState.ACCEPTED)) {
-            requestAssignRepository.deleteById(requestAssignDTO.getId());
-            return ResponseEntity.noContent().build();
-        } else { // declined
+        // if admin decline then the request has note
+        if(requestAssignDTO.getState().equals(RequestAssignState.DECLINED)) {
+            if(requestAssignDTO.getNote() == null) {
+                throw new BadRequestException("Note cannot be null!");
+            }
+            if(requestAssignDTO.getNote().isEmpty()) {
+                throw new BadRequestException("Note cannot be empty!");
+            }
             requestAssign.setNote(requestAssignDTO.getNote());
-            requestAssign.setState(requestAssignDTO.getState());
-            return ResponseEntity.ok(new RequestAssignDTO(requestAssignRepository.save(requestAssign)));
         }
+        requestAssign.setState(requestAssignDTO.getState());
+        return ResponseEntity.ok(new RequestAssignDTO(requestAssignRepository.save(requestAssign)));
     }
 
     @Override
@@ -108,8 +172,9 @@ public class RequestAssignServiceImpl implements RequestAssignService {
                 throw new ConflictException("User does not own this request for assigning!");
             }
         }
-//        if (!requestAssign.getState().equals(RequestAssignState.WAITING_FOR_ASSIGNING))
-//            throw new ConflictException("Request must be waiting for returning!");
+
+        if (!requestAssign.getState().equals(RequestAssignState.WAITING_FOR_ASSIGNING))
+            throw new ConflictException("Request must be waiting for returning state!");
         requestAssignRepository.deleteById(id);
     }
 

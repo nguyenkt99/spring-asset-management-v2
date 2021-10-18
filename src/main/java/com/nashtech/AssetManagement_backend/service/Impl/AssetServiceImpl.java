@@ -39,10 +39,10 @@ public class AssetServiceImpl implements AssetService {
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getLocation();
         if (dto.getState() != AssetState.NOT_AVAILABLE && dto.getState() != AssetState.AVAILABLE)
             throw new BadRequestException(ASSET_BAD_STATE_ERROR);
-        AssetEntity asset = AssetDTO.toEntity(dto);
+        AssetEntity asset = dto.toEntity();
         asset.setLocation(location);
         asset.setCategoryEntity(cate);
-        return AssetDTO.toDTO(assetRepo.save(asset));
+        return new AssetDTO(assetRepo.save(asset));
     }
 
     /// FIND ALL ASSETS
@@ -50,25 +50,21 @@ public class AssetServiceImpl implements AssetService {
     public List<AssetDTO> findAllByAdminLocation(String username) {
         LocationEntity location = userRepo.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getLocation();
-        List<AssetDTO> AssetDTOs = assetRepo.findAll().stream().filter(p -> p.getLocation().equals(location))
-            .map(AssetDTO::toDTO).collect(Collectors.toList());
-        AssetDTOs.sort(Comparator.comparing(AssetDTO::getAssetCode));
-
-        return AssetDTOs;
+        return assetRepo.findAll(location.getId()).stream().map(AssetDTO::new).collect(Collectors.toList());
     }
 
     @Override
     public AssetDTO findByAssetName(String assetName) throws ResourceNotFoundException {
         AssetEntity assetEntity = assetRepo.findByAssetName(assetName).orElseThrow(
                 () -> new ResourceNotFoundException("Asset is not found for this asset name:" + assetName));
-        return AssetDTO.toDTO(assetEntity);
+        return new AssetDTO(assetEntity);
     }
 
     @Override
     public AssetDTO findByAssetCode(String assetCode) throws ResourceNotFoundException {
         AssetEntity assetEntity = assetRepo.findByAssetCode(assetCode).orElseThrow(
                 () -> new ResourceNotFoundException("Asset is not found for this asset code:" + assetCode));
-        return AssetDTO.toDTO(assetEntity);
+        return new AssetDTO(assetEntity);
     }
 
     @Override
@@ -99,7 +95,7 @@ public class AssetServiceImpl implements AssetService {
         asset.setSpecification(dto.getSpecification());
         asset.setInstalledDate(dto.getInstalledDate());
         asset.setState(dto.getState());
-        return AssetDTO.toDTO(assetRepo.save(asset));
+        return new AssetDTO(assetRepo.save(asset));
     }
 
     @Override

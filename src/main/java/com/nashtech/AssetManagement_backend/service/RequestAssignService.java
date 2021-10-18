@@ -7,7 +7,8 @@ import java.util.List;
 
 public interface RequestAssignService {
     RequestAssignDTO save(RequestAssignDTO requestAssignDTO);
+    RequestAssignDTO update(RequestAssignDTO requestAssignDTO);
     List<RequestAssignDTO> getAll(String username);
-    ResponseEntity<?> updateState(RequestAssignDTO requestAssignDTO);
+    ResponseEntity<?> handleRequestAssign(RequestAssignDTO requestAssignDTO);
     void delete(Long id, String username);
 }

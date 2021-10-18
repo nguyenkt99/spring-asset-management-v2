@@ -6,7 +6,6 @@ import com.nashtech.AssetManagement_backend.exception.BadRequestException;
 import com.nashtech.AssetManagement_backend.exception.ConflictException;
 import com.nashtech.AssetManagement_backend.exception.InvalidInputException;
 import com.nashtech.AssetManagement_backend.exception.ResourceNotFoundException;
-import com.nashtech.AssetManagement_backend.handleException.NotFoundExecptionHandle;
 import com.nashtech.AssetManagement_backend.repository.*;
 import com.nashtech.AssetManagement_backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +40,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public UsersEntity findByUserName(String username) {
         return userRepository.findByUserName(username)
-                .orElseThrow(() -> new NotFoundExecptionHandle("Could not found user: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("Could not found user: " + username));
     }
 
     @Override
     public UserDetailEntity findByEmail(String email) {
-        return userDetailRepository.findByEmail(email).orElseThrow(()-> new NotFoundExecptionHandle("Could not found user: " + email));
+        return userDetailRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("Could not found user: " + email));
     }
 
     @Override
@@ -80,7 +79,6 @@ public class UserServiceImpl implements UserService {
     public UserDto saveUser(UserDto userDto, String username) {
         LocationEntity location = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail().getLocation();
-//        LocationEntity location = locationRepository.getById(1L);
         DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
         UsersEntity usersEntity = userDto.toEntity(userDto);
@@ -106,10 +104,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> retrieveUsers(LocationEntity location) {
-//        List<UsersEntity> usersEntities = userRepository.findAllByLocationAndState(location, UserState.Enable);
         List<UsersEntity> usersEntities = userRepository.findAllByUserDetail_Location(location);
         usersEntities = usersEntities.stream()
-//                .sorted(Comparator.comparing(o -> (o.getUserDetail().getFirstName() + ' ' + o.getUserDetail().getLastName())))
                 .sorted(Comparator.comparing(o -> (o.getStaffCode())))
                 .collect(Collectors.toList());
         return new UserDto().toListDto(usersEntities);
@@ -117,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public UserDto getUserByStaffCode(String staffCode, LocationEntity location) throws ResourceNotFoundException {
+    public UserDto getUserByStaffCode(String staffCode, LocationEntity location) {
         UsersEntity user = userRepository.findByStaffCodeAndUserDetail_Location(staffCode, location)
                 .orElseThrow(() -> new ResourceNotFoundException("user not found for this staff code: " + staffCode));
         return new UserDto().toDto(user);
