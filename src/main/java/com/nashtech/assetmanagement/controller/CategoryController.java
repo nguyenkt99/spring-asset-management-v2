@@ -2,18 +2,23 @@ package com.nashtech.assetmanagement.controller;
 
 import com.nashtech.assetmanagement.dto.CategoryDTO;
 import com.nashtech.assetmanagement.service.CategoryService;
-import lombok.RequiredArgsConstructor;
+import com.nashtech.assetmanagement.service.NotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/category")
-@RequiredArgsConstructor
 public class CategoryController {
-    private final CategoryService categoryService;
+    @Autowired
+    CategoryService categoryService;
+
+    @Autowired
+    NotificationService notificationService;
 
     @GetMapping()
     public ResponseEntity<List<CategoryDTO>> showAll(){
@@ -40,6 +45,17 @@ public class CategoryController {
     public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate )
     {
         return categoryService.getSumOfAvailableAssetByCategory(prefix, startDate, endDate);
+    }
+
+
+    @PostMapping("/firebase")
+    public CategoryDTO post(@RequestBody CategoryDTO dto) throws ExecutionException, InterruptedException {
+        return notificationService.send(dto);
+    }
+
+    @GetMapping("/firebase/{catePrefix}")
+    public CategoryDTO getCate (@PathVariable String catePrefix) throws ExecutionException, InterruptedException {
+        return notificationService.get(catePrefix);
     }
 
 }

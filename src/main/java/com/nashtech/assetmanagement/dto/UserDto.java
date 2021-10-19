@@ -1,6 +1,10 @@
 package com.nashtech.assetmanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.nashtech.assetmanagement.constants.Gender;
+import com.nashtech.assetmanagement.constants.Location;
+import com.nashtech.assetmanagement.constants.RoleName;
+import com.nashtech.assetmanagement.constants.UserState;
 import com.nashtech.assetmanagement.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

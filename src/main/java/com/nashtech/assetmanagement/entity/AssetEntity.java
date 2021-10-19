@@ -1,5 +1,6 @@
 package com.nashtech.assetmanagement.entity;
 
+import com.nashtech.assetmanagement.constants.AssetState;
 import com.nashtech.assetmanagement.generators.AssetCodeGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,7 +28,7 @@ public class AssetEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "asset_seq")
     @GenericGenerator(
             name = "asset_seq",
-            strategy = "com.nashtech.AssetManagement_backend.generators.AssetCodeGenerator",
+            strategy = "com.nashtech.assetmanagement.generators.AssetCodeGenerator",
             parameters = {
                     @Parameter(name = AssetCodeGenerator.NUMBER_FORMAT_PARAMETER, value = "%06d")})
     @Column(name = "asset_code", length = 8)

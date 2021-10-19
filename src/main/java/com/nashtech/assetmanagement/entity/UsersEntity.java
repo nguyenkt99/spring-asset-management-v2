@@ -27,7 +27,7 @@ public class UsersEntity {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @GenericGenerator(
             name = "user_seq",
-            strategy = "com.nashtech.AssetManagement_backend.generators.StaffCodeGenerator",
+            strategy = "com.nashtech.assetmanagement.generators.StaffCodeGenerator",
             parameters = {
                     @Parameter(name = StaffCodeGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d") })
     @Column(name = "staff_code", length = 6)

@@ -2,7 +2,7 @@ package com.nashtech.assetmanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.entity.AssignmentDetailEntity;
-import com.nashtech.assetmanagement.entity.AssignmentState;
+import com.nashtech.assetmanagement.constants.AssignmentState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

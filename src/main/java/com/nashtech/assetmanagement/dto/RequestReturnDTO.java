@@ -2,7 +2,7 @@ package com.nashtech.assetmanagement.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.entity.RequestReturnEntity;
-import com.nashtech.assetmanagement.entity.RequestReturnState;
+import com.nashtech.assetmanagement.constants.RequestReturnState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

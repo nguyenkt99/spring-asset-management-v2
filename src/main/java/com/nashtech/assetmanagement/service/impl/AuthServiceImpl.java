@@ -1,4 +1,4 @@
-package com.nashtech.assetmanagement.service.Impl;
+package com.nashtech.assetmanagement.service.impl;
 
 import java.util.List;
 import java.util.Random;
@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.nashtech.assetmanagement.dto.UserDto;
 import com.nashtech.assetmanagement.entity.UserDetailEntity;
-import com.nashtech.assetmanagement.entity.UserState;
+import com.nashtech.assetmanagement.constants.UserState;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.payload.request.LoginRequest;
 import com.nashtech.assetmanagement.payload.response.JwtResponse;

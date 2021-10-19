@@ -1,5 +1,7 @@
 package com.nashtech.assetmanagement.entity;
 
+import com.nashtech.assetmanagement.constants.Gender;
+import com.nashtech.assetmanagement.constants.UserState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

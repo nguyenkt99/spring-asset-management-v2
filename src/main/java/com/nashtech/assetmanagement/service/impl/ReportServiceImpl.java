@@ -1,4 +1,4 @@
-package com.nashtech.assetmanagement.service.Impl;
+package com.nashtech.assetmanagement.service.impl;
 
 import com.nashtech.assetmanagement.dto.ReportDTO;
 import com.nashtech.assetmanagement.dto.StateQuantity;

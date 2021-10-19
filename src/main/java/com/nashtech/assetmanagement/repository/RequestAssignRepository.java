@@ -2,7 +2,7 @@ package com.nashtech.assetmanagement.repository;
 
 import com.nashtech.assetmanagement.entity.LocationEntity;
 import com.nashtech.assetmanagement.entity.RequestAssignEntity;
-import com.nashtech.assetmanagement.entity.UserState;
+import com.nashtech.assetmanagement.constants.UserState;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

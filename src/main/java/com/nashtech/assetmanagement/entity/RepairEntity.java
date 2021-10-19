@@ -1,5 +1,6 @@
 package com.nashtech.assetmanagement.entity;
 
+import com.nashtech.assetmanagement.constants.RepairState;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

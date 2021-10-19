@@ -1,6 +1,6 @@
 package com.nashtech.assetmanagement.dto;
 
-import com.nashtech.assetmanagement.entity.RoleName;
+import com.nashtech.assetmanagement.constants.RoleName;
 import com.nashtech.assetmanagement.entity.RolesEntity;
 
 import lombok.Getter;

@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.entity.AssignmentEntity;
-import com.nashtech.assetmanagement.entity.AssignmentState;
+import com.nashtech.assetmanagement.constants.AssignmentState;
 
 import lombok.*;
 
