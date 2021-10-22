@@ -42,20 +42,9 @@ public class CategoryController {
     }
 
     @GetMapping("/{prefix}")
-    public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate )
-    {
+    public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate ) {
         return categoryService.getSumOfAvailableAssetByCategory(prefix, startDate, endDate);
     }
 
-
-    @PostMapping("/firebase")
-    public CategoryDTO post(@RequestBody CategoryDTO dto) throws ExecutionException, InterruptedException {
-        return notificationService.send(dto);
-    }
-
-    @GetMapping("/firebase/{catePrefix}")
-    public CategoryDTO getCate (@PathVariable String catePrefix) throws ExecutionException, InterruptedException {
-        return notificationService.get(catePrefix);
-    }
 
 }

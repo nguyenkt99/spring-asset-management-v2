@@ -1,15 +1,18 @@
 package com.nashtech.assetmanagement.service.impl;
 
 import com.nashtech.assetmanagement.constants.AssignmentState;
+import com.nashtech.assetmanagement.constants.NotificationType;
 import com.nashtech.assetmanagement.constants.RequestReturnState;
 import com.nashtech.assetmanagement.constants.RoleName;
 import com.nashtech.assetmanagement.dto.AssignmentDetailDTO;
+import com.nashtech.assetmanagement.dto.NotificationDTO;
 import com.nashtech.assetmanagement.dto.RequestReturnDTO;
 import com.nashtech.assetmanagement.entity.*;
 import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.*;
+import com.nashtech.assetmanagement.service.NotificationService;
 import com.nashtech.assetmanagement.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,6 +38,9 @@ public class RequestReturnServiceImpl implements RequestReturnService {
     AssignmentServiceImpl assignmentService;
 
     @Autowired
+    NotificationService notificationService;
+
+    @Autowired
     JavaMailSender javaMailSender;
 
     @Override
@@ -49,15 +55,15 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
 
         UserDetailEntity requestBy = userRepository.getByUserName(requestReturnDTO.getRequestBy()).getUserDetail();
-        if(!requestBy.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) { // requestedBy is not admin
-            if(!requestBy.equals(assignment.getAssignTo())) { // requestedBy is also not assignedTo
+        if (!requestBy.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) { // requestedBy is not admin
+            if (!requestBy.equals(assignment.getAssignTo())) { // requestedBy is also not assignedTo
                 throw new ConflictException("RequestedBy must be admin or assignee!");
             }
         }
 
-        for(AssignmentDetailDTO assignmentDetailDTO : requestReturnDTO.getAssignmentDetails()) {
-            for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
-                if(assignmentDetailDTO.getAssetCode().equals(assignmentDetail.getAsset().getAssetCode())) {
+        for (AssignmentDetailDTO assignmentDetailDTO : requestReturnDTO.getAssignmentDetails()) {
+            for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+                if (assignmentDetailDTO.getAssetCode().equals(assignmentDetail.getAsset().getAssetCode())) {
                     assignmentDetail.setState(AssignmentState.WAITING_FOR_RETURNING);
                     assignmentDetail.setRequestReturn(requestReturn);
                     assignmentDetailsForReturn.add(assignmentDetail);
@@ -89,9 +95,27 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 //            javaMailSender.send(msg);
 //        }
 
-        if(!assignmentDetails.stream().anyMatch(x->x.getRequestReturn() == null))
+        if (!assignmentDetails.stream().anyMatch(x -> x.getRequestReturn() == null))
             assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
-        return new RequestReturnDTO(requestReturnRepository.save(requestReturn));
+
+        RequestReturnEntity savedReq = requestReturnRepository.save(requestReturn);
+
+        String title = "";
+        String usernameReceiver = null;
+        if (savedReq.getRequestBy().getUser().getRole().getName() == RoleName.ROLE_ADMIN) {
+            title = "Admin created request for retuning with assignment id = " + savedReq.getAssignment().getId();
+            usernameReceiver = savedReq.getAssignment().getAssignTo().getUser().getUserName();
+        } else {
+            title = savedReq.getRequestBy().getUser().getUserName() + " created request for retuning with assignment id = " + savedReq.getAssignment().getId();
+        }
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new RequestReturnDTO(savedReq);
+        }
     }
 
     @Override
@@ -114,20 +138,20 @@ public class RequestReturnServiceImpl implements RequestReturnService {
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
         }
 
-        if(!requestBy.getUserName().equals(requestReturn.getRequestBy().getUser().getUserName())) {
+        if (!requestBy.getUserName().equals(requestReturn.getRequestBy().getUser().getUserName())) {
             throw new BadRequestException("The request wasn't created by user so cannot delete!");
         }
 
         AssignmentEntity assignment = requestReturn.getAssignment();
         List<AssignmentDetailEntity> assignmentDetails = requestReturn.getAssignmentDetails();
-        for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
-            if(assignmentDetail.getRequestReturn().getId() == requestReturn.getId()) {
+        for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+            if (assignmentDetail.getRequestReturn().getId() == requestReturn.getId()) {
                 assignmentDetail.setState(AssignmentState.ACCEPTED);
                 assignmentDetail.setRequestReturn(null);
             }
         }
 
-        if(assignmentDetails.stream().anyMatch(x->x.getRequestReturn() == null))
+        if (assignmentDetails.stream().anyMatch(x -> x.getRequestReturn() == null))
             assignment.setState(AssignmentState.ACCEPTED);
         requestReturnRepository.save(requestReturn);
         requestReturn.setAssignment(null);
@@ -143,14 +167,14 @@ public class RequestReturnServiceImpl implements RequestReturnService {
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
 
         AssignmentEntity assignment = requestReturn.getAssignment();
-        for(AssignmentDetailEntity assignmentDetail : assignment.getAssignmentDetails()) {
-            if(assignmentDetail.getState() == AssignmentState.WAITING_FOR_RETURNING) {
+        for (AssignmentDetailEntity assignmentDetail : assignment.getAssignmentDetails()) {
+            if (assignmentDetail.getState() == AssignmentState.WAITING_FOR_RETURNING) {
                 assignmentDetail.setState(AssignmentState.COMPLETED);
                 assignmentService.updateAvailableAssetState(assignmentDetail);
             }
         }
 
-        if(!assignment.getAssignmentDetails().stream().anyMatch(x->x.getState() == null))
+        if (!assignment.getAssignmentDetails().stream().anyMatch(x -> x.getState() == null))
             assignment.setState(AssignmentState.COMPLETED);
         requestReturn.setAssignment(assignment);
         requestReturn.setReturnedDate(new Date());
@@ -171,7 +195,24 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 //                    "\nAdministrator");
 //            javaMailSender.send(msg);
 //        }
-        return new RequestReturnDTO(requestReturnRepository.save(requestReturn));
+        RequestReturnEntity savedReq = requestReturnRepository.save(requestReturn);
+        String title = "";
+        String usernameReceiver = null;
+        title = "Admin accepted the request for retuning with assignment id = " + savedReq.getAssignment().getId() +
+            " includes: ";
+        for(AssignmentDetailEntity a : savedReq.getAssignmentDetails()) {
+            title += a.getAsset().getAssetCode() + ", ";
+        }
+
+        usernameReceiver = savedReq.getRequestBy().getUser().getUserName();
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new RequestReturnDTO(savedReq);
+        }
     }
 
     private final String REQUEST_NOT_FOUND_ERROR = "Request not found.";

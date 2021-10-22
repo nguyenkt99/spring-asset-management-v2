@@ -1,8 +1,10 @@
 package com.nashtech.assetmanagement.service.impl;
 
+import com.nashtech.assetmanagement.constants.NotificationType;
 import com.nashtech.assetmanagement.constants.RequestAssignState;
 import com.nashtech.assetmanagement.constants.RoleName;
 import com.nashtech.assetmanagement.constants.UserState;
+import com.nashtech.assetmanagement.dto.NotificationDTO;
 import com.nashtech.assetmanagement.dto.RequestAssignDTO;
 import com.nashtech.assetmanagement.dto.RequestAssignDetailDTO;
 import com.nashtech.assetmanagement.entity.*;
@@ -10,6 +12,7 @@ import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.*;
+import com.nashtech.assetmanagement.service.NotificationService;
 import com.nashtech.assetmanagement.service.RequestAssignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,6 +34,9 @@ public class RequestAssignServiceImpl implements RequestAssignService {
 
     @Autowired
     CategoryRepository categoryRepository;
+
+    @Autowired
+    NotificationService notificationService;
 
     @Override
     public RequestAssignDTO save(RequestAssignDTO requestAssignDTO) {
@@ -58,7 +65,21 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         requestAssign.setRequestedDate(new Date());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
-        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
+        RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
+
+        String title = "";
+        title = savedReq.getRequestBy().getFirstName() + " " + savedReq.getRequestBy().getLastName()  + " (" + savedReq.getRequestBy().getUser().getUserName() + ")" + " created request for assigning including: ";
+        for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
+            title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
+        }
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new RequestAssignDTO(savedReq);
+        }
     }
 
     @Override
@@ -119,7 +140,21 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         requestAssign.setUpdatedDate(new Date());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
-        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
+        RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
+
+        String title = "";
+        title = savedReq.getRequestBy().getFirstName() + " " + savedReq.getRequestBy().getLastName()  + " (" + savedReq.getRequestBy().getUser().getUserName() + ")" + " updated assigning request including: ";
+        for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
+            title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
+        }
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new RequestAssignDTO(savedReq);
+        }
     }
 
     @Override
@@ -180,5 +215,4 @@ public class RequestAssignServiceImpl implements RequestAssignService {
             throw new ConflictException("Request must be waiting for returning state!");
         requestAssignRepository.deleteById(id);
     }
-
 }

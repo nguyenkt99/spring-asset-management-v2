@@ -1,10 +1,10 @@
 package com.nashtech.assetmanagement.service.impl;
 
-import com.nashtech.assetmanagement.constants.AssetState;
-import com.nashtech.assetmanagement.constants.AssignmentState;
-import com.nashtech.assetmanagement.constants.RequestAssignState;
+import com.nashtech.assetmanagement.constants.*;
 import com.nashtech.assetmanagement.dto.AssignmentDTO;
 import com.nashtech.assetmanagement.dto.AssignmentDetailDTO;
+import com.nashtech.assetmanagement.dto.NotificationDTO;
+import com.nashtech.assetmanagement.dto.RequestReturnDTO;
 import com.nashtech.assetmanagement.entity.*;
 import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
@@ -14,6 +14,7 @@ import com.nashtech.assetmanagement.repository.AssignmentRepository;
 import com.nashtech.assetmanagement.repository.RequestAssignRepository;
 import com.nashtech.assetmanagement.repository.UserRepository;
 import com.nashtech.assetmanagement.service.AssignmentService;
+import com.nashtech.assetmanagement.service.NotificationService;
 import com.nashtech.assetmanagement.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,9 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    NotificationService notificationService;
 
     @Autowired
     JavaMailSender javaMailSender;
@@ -154,7 +158,23 @@ public class AssignmentServiceImpl implements AssignmentService {
 //                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
 //        javaMailSender.send(msg);
 
-        return new AssignmentDTO(assignmentRepository.save(assignment));
+        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
+
+        String title = "";
+        String usernameReceiver = null;
+        title = "Admin created the assignment with id = " + savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
+            title += a.getAsset().getAssetCode() + ", ";
+        }
+        usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new AssignmentDTO(savedAssignment);
+        }
     }
 
     public AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO) {
@@ -301,8 +321,23 @@ public class AssignmentServiceImpl implements AssignmentService {
 //                "\nDate: "+dateFormatter.format(assignment.getAssignedDate())+
 //                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
 //        javaMailSender.send(msg);
+        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
-        return new AssignmentDTO(assignmentRepository.save(assignment));
+        String title = "";
+        String usernameReceiver = null;
+        title = "Admin updated the assignment with id = " + savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
+            title += a.getAsset().getAssetCode() + ", ";
+        }
+        usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new AssignmentDTO(savedAssignment);
+        }
     }
 
     @Override
@@ -344,11 +379,24 @@ public class AssignmentServiceImpl implements AssignmentService {
                 }
             }
         }
-
-
-
         assignment.setState(assignmentDTO.getState());
-        return new AssignmentDTO(assignmentRepository.save(assignment));
+        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
+
+        String title = "";
+        String usernameReceiver = null;
+        title = "Admin updated the assignment with id = " + savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
+            title += a.getAsset().getAssetCode() + ", ";
+        }
+        usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        try {
+            notificationService.send(notificationDTO);
+        } catch (Exception e) {
+            System.out.println("Send Notification Error!!");
+        } finally {
+            return new AssignmentDTO(savedAssignment);
+        }
     }
 
     public void updateAvailableAssetState(AssignmentDetailEntity assignmentDetail) {
