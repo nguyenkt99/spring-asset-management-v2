@@ -218,6 +218,12 @@ public class UserServiceImpl implements UserService {
         return new UserDto().toDto(user);
     }
 
+    @Override
+    public List<UserDto> getAdmins() {
+        List<UsersEntity> admins = userRepository.findAllAdmin();
+        return new UserDto().toListDto(admins);
+    }
+
     // number ranges from 1 (Sunday) to 7 (Saturday)
     private int getDayNumberOld(Date date) {
         Calendar cal = Calendar.getInstance();

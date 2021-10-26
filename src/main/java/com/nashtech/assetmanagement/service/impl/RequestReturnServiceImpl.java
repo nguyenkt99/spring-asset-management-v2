@@ -12,7 +12,7 @@ import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.*;
-import com.nashtech.assetmanagement.service.NotificationService;
+import com.nashtech.assetmanagement.service.FirebaseService;
 import com.nashtech.assetmanagement.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -38,7 +38,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
     AssignmentServiceImpl assignmentService;
 
     @Autowired
-    NotificationService notificationService;
+    FirebaseService firebaseService;
 
     @Autowired
     JavaMailSender javaMailSender;
@@ -110,7 +110,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         }
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
         try {
-            notificationService.send(notificationDTO);
+            firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
             System.out.println("Send Notification Error!!");
         } finally {
@@ -207,7 +207,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         usernameReceiver = savedReq.getRequestBy().getUser().getUserName();
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
         try {
-            notificationService.send(notificationDTO);
+            firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
             System.out.println("Send Notification Error!!");
         } finally {

@@ -12,7 +12,7 @@ import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.*;
-import com.nashtech.assetmanagement.service.NotificationService;
+import com.nashtech.assetmanagement.service.FirebaseService;
 import com.nashtech.assetmanagement.service.RequestAssignService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,7 +35,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
     CategoryRepository categoryRepository;
 
     @Autowired
-    NotificationService notificationService;
+    FirebaseService firebaseService;
 
     @Override
     public RequestAssignDTO save(RequestAssignDTO requestAssignDTO) {
@@ -74,7 +73,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         }
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
         try {
-            notificationService.send(notificationDTO);
+            firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
             System.out.println("Send Notification Error!!");
         } finally {
@@ -149,7 +148,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         }
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
         try {
-            notificationService.send(notificationDTO);
+            firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
             System.out.println("Send Notification Error!!");
         } finally {

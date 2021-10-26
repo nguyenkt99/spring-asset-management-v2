@@ -52,6 +52,15 @@ public class UserDetailEntity {
     @Column(length = 30)
     private UserState state;
 
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "staff_code")
+    private UsersEntity user;
+
+    @ManyToOne
+    @JoinColumn(name="dept_code")
+    private DepartmentEntity department;
+
     @OneToMany(mappedBy = "assignTo")
     private List<AssignmentEntity> assignmentTos = new ArrayList<>();
 
@@ -66,15 +75,6 @@ public class UserDetailEntity {
 
     @OneToMany(mappedBy = "repairBy")
     private List<RepairEntity> repairBys = new ArrayList<>();
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "staff_code")
-    private UsersEntity user;
-
-    @ManyToOne
-    @JoinColumn(name="dept_code")
-    private DepartmentEntity department;
 
     @PrePersist
     protected void onCreate() {

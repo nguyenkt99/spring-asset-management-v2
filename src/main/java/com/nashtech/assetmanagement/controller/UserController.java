@@ -20,6 +20,12 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @GetMapping("/admins")
+    public ResponseEntity<List<UserDto>> getAdmins() {
+        List<UserDto> userDtos = userService.getAdmins();
+        return new ResponseEntity<>(userDtos, HttpStatus.OK);
+    }
+
     @GetMapping("")
     public ResponseEntity<List<UserDto>> getAll (Authentication authentication) {
         LocationEntity location = userService.getLocationByUserName(authentication.getName());

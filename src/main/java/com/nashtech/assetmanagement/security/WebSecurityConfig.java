@@ -74,31 +74,32 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().and().csrf().disable().exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers("/api/auth/**").permitAll()
-                .antMatchers(HttpMethod.PATCH,"/api/request-assign/**").hasRole("ADMIN")
-                .antMatchers("/api/request-assign/**").hasRole("STAFF")
-                .antMatchers(HttpMethod.GET,"/api/category").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers("/api/assignment/home", "/api/users/profile").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers(HttpMethod.POST, "/api/request-return").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers(HttpMethod.DELETE, "/api/request-return/**").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers(HttpMethod.PUT, "/api/assignment/staff/**").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers("/api/role", "/api/users/**", "/api/category", "/api/asset/**", "/api/assignment/**",
-                        "/api/request-return", "/api/report", "/api/repair").hasRole("ADMIN")
-                .anyRequest().authenticated();
+//                .antMatchers("/api/auth/**").permitAll()
+//                .antMatchers(HttpMethod.PATCH,"/api/request-assign/**").hasRole("ADMIN")
+//                .antMatchers("/api/request-assign/**").hasRole("STAFF")
+//                .antMatchers(HttpMethod.GET,"/api/category").hasAnyRole("ADMIN", "STAFF")
+//                .antMatchers("/api/assignment/home", "/api/users/profile").hasAnyRole("ADMIN", "STAFF")
+//                .antMatchers(HttpMethod.POST, "/api/request-return").hasAnyRole("ADMIN", "STAFF")
+//                .antMatchers(HttpMethod.DELETE, "/api/request-return/**").hasAnyRole("ADMIN", "STAFF")
+//                .antMatchers(HttpMethod.PUT, "/api/assignment/staff/**").hasAnyRole("ADMIN", "STAFF")
+//                .antMatchers("/api/role", "/api/users/**", "/api/category", "/api/asset/**", "/api/assignment/**",
+//                        "/api/request-return", "/api/report", "/api/repair").hasRole("ADMIN")
+//                .anyRequest().authenticated();
+                .anyRequest().permitAll();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
-    @Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Collections.singletonList("*"));
-        configuration.setAllowedHeaders(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
-        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**",configuration);
-        return source;
-    }
+//    @Bean
+//    CorsConfigurationSource corsConfigurationSource() {
+//        CorsConfiguration configuration = new CorsConfiguration();
+//        configuration.setAllowedOrigins(Collections.singletonList("*"));
+//        configuration.setAllowedHeaders(Collections.singletonList("*"));
+//        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+//        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**",configuration);
+//        return source;
+//    }
 
 
 

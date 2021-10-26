@@ -1,6 +1,7 @@
 package com.nashtech.assetmanagement.repository;
 import com.nashtech.assetmanagement.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,5 +26,8 @@ public interface UserRepository extends JpaRepository<UsersEntity, Long> {
 
 //    List<UsersEntity> findAllByLocationAndState(LocationEntity location, UserState userState);
     List<UsersEntity> findAllByUserDetail_Location(LocationEntity location);
+
+    @Query("SELECT u FROM UsersEntity u WHERE u.role.id = 1")
+    List<UsersEntity> findAllAdmin();
 
 }

@@ -36,4 +36,6 @@ public interface UserService {
 
     UserDto getProfile(String username);
 
+    List<UserDto> getAdmins();
+
 }
