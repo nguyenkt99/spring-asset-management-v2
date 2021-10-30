@@ -34,14 +34,9 @@ public class AssetController {
         return ResponseEntity.ok().body(assetService.delete(assetCode));
     }
 
-    @GetMapping("")
-    @ResponseBody
-    public ResponseEntity<List<AssetDTO>> getAll(Authentication authentication){
-        List<AssetDTO> assetDTOs = assetService.findAllByAdminLocation(authentication.getName());
-        if (assetDTOs.isEmpty()){
-            return new ResponseEntity<>(assetDTOs, HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(assetDTOs, HttpStatus.OK);
+    @GetMapping
+    public List<AssetDTO> getAll(Authentication authentication){
+        return assetService.findAllByAdminLocation(authentication.getName());
     }
 
     @GetMapping("/{assetCode}")
