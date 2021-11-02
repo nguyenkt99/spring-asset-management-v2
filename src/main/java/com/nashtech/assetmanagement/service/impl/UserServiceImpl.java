@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             UsersEntity user = userRepository.save(existUser);
-            return new UserDto().toDto(user);
+            return new UserDto(user);
         } catch (Exception e) {
             throw new BadRequestException("invalid Request");
         }
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
 
         try {
             UsersEntity user = userRepository.save(existUser);
-            return new UserDto().toDto(user);
+            return new UserDto(user);
         } catch (Exception e) {
             throw new BadRequestException("invalid Request");
         }
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
         RolesEntity rolesEntity = roleRepository.getByName(userDto.getType());
         usersEntity.setRole(rolesEntity);
         usersEntity = userRepository.save(usersEntity);
-        return new UserDto().toDto(userRepository.getByStaffCode(usersEntity.getStaffCode()));
+        return new UserDto(userRepository.getByStaffCode(usersEntity.getStaffCode()));
     }
 
     @Override
@@ -118,13 +118,16 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserByStaffCode(String staffCode, LocationEntity location) {
         UsersEntity user = userRepository.findByStaffCodeAndUserDetail_Location(staffCode, location)
                 .orElseThrow(() -> new ResourceNotFoundException("user not found for this staff code: " + staffCode));
-        return new UserDto().toDto(user);
+        return new UserDto(user);
     }
 
     @Override
     public UserDto updateUser(UserDto userDto) {
         UsersEntity existUser = userRepository.findByStaffCode(userDto.getStaffCode()).orElseThrow(
                 () -> new ResourceNotFoundException("User not found for this staff code: " + userDto.getStaffCode()));
+        DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
+        RolesEntity rolesEntity = roleRepository.getByName(userDto.getType());
 
         if (userDto.getJoinedDate().before(userDto.getDateOfBirth()))
             throw new InvalidInputException(
@@ -148,12 +151,10 @@ public class UserServiceImpl implements UserService {
         existUser.getUserDetail().setGender(userDto.getGender());
         existUser.getUserDetail().setJoinedDate(userDto.getJoinedDate());
         existUser.getUserDetail().setEmail(userDto.getEmail());
-
-        RolesEntity rolesEntity = roleRepository.getByName(userDto.getType());
+        existUser.getUserDetail().setDepartment(department);
         existUser.setRole(rolesEntity);
 
-        UsersEntity user = userRepository.save(existUser);
-        return new UserDto().toDto(user);
+        return new UserDto(userRepository.save(existUser));
     }
 
     public LocationEntity getLocationByUserName(String userName) {
@@ -215,7 +216,7 @@ public class UserServiceImpl implements UserService {
     public UserDto getProfile(String username) {
         UsersEntity user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
-        return new UserDto().toDto(user);
+        return new UserDto(user);
     }
 
     @Override

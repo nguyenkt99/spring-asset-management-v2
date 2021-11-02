@@ -18,6 +18,7 @@ import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -27,11 +28,11 @@ public class UserDto {
     private String staffCode;
 
     @Size(max = 50)
-    @NotBlank(message = "firstname can't not be blank")
+    @NotBlank(message = "First name can't not be blank")
         private String firstName;
 
     @Size(max = 50)
-    @NotBlank(message = "lastname can't not be blank")
+    @NotBlank(message = "Last name can't not be blank")
     private String lastName;
 
     @NotNull(message = "gender date is not null")
@@ -41,11 +42,11 @@ public class UserDto {
 
     private String username;
 
-    @NotNull(message = "dateOfBirth date is not null")
+    @NotNull(message = "Date of birth date is not null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
 
-    @NotNull(message = "joinded date is not null")
+    @NotNull(message = "Joined date is not null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date joinedDate;
 
@@ -64,24 +65,22 @@ public class UserDto {
 
     private UserState state;
 
-    public UserDto toDto(UsersEntity entity) {
-        UserDto dto = new UserDto();
-        dto.setLastName(entity.getUserDetail().getLastName());
-        dto.setFirstName(entity.getUserDetail().getFirstName());
-        dto.setDateOfBirth(entity.getUserDetail().getDateOfBirth());
-        dto.setJoinedDate(entity.getUserDetail().getJoinedDate());
-        dto.setLocation(entity.getUserDetail().getLocation().getName());
-        dto.setType(entity.getRole().getName());
-        dto.setState(entity.getUserDetail().getState());
-        dto.setGender(entity.getUserDetail().getGender());
-        dto.setStaffCode(entity.getStaffCode());
-        dto.setUsername(entity.getUserName());
-        dto.setFirstLogin(entity.isFirstLogin());
-        dto.setEmail(entity.getUserDetail().getEmail());
-        dto.setFullName(entity.getUserDetail().getFirstName() + " " + entity.getUserDetail().getLastName());
-        dto.setDeptCode(entity.getUserDetail().getDepartment().getDeptCode());
-        dto.setDeptName(entity.getUserDetail().getDepartment().getName());
-        return dto;
+    public UserDto(UsersEntity entity) {
+        this.lastName = entity.getUserDetail().getLastName();
+        this.firstName = entity.getUserDetail().getFirstName();
+        this.dateOfBirth = entity.getUserDetail().getDateOfBirth();
+        this.joinedDate = entity.getUserDetail().getJoinedDate();
+        this.location = entity.getUserDetail().getLocation().getName();
+        this.type = entity.getRole().getName();
+        this.state = entity.getUserDetail().getState();
+        this.gender = entity.getUserDetail().getGender();
+        this.staffCode = entity.getStaffCode();
+        this.username = entity.getUserName();
+        this.isFirstLogin = entity.isFirstLogin();
+        this.email = entity.getUserDetail().getEmail();
+        this.fullName = entity.getUserDetail().getFirstName() + " " + entity.getUserDetail().getLastName();
+        this.deptCode = entity.getUserDetail().getDepartment().getDeptCode();
+        this.deptName = entity.getUserDetail().getDepartment().getName();
     }
 
     public UsersEntity toEntity(UserDto dto) {
@@ -101,13 +100,7 @@ public class UserDto {
     }
 
     public List<UserDto> toListDto(List<UsersEntity> listEntity) {
-        List<UserDto> listDto = new ArrayList<>();
-
-        listEntity.forEach(e -> {
-            listDto.add(this.toDto(e));
-        });
-
-        return listDto;
+        return listEntity.stream().map(UserDto::new).collect(Collectors.toList());
     }
 
 }
