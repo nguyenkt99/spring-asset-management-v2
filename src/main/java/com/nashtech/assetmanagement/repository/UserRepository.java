@@ -12,20 +12,17 @@ public interface UserRepository extends JpaRepository<UsersEntity, Long> {
 
     Optional<UsersEntity> findByStaffCode(String staffCode);
 
-    Optional<UsersEntity> findByStaffCodeAndUserDetail_Location(String staffCode, LocationEntity location);
+    Optional<UsersEntity> findByStaffCodeAndUserDetail_Department_Location(String staffCode, LocationEntity location);
 
     UsersEntity getByUserName(String username);
 
     Optional<UsersEntity> findByUserName(String username);
 
-//    Optional<UsersEntity> findByEmail(String email); string email
 
     Boolean existsByUserName(String username);
 
-//    Boolean existsByEmail(String email);
 
-//    List<UsersEntity> findAllByLocationAndState(LocationEntity location, UserState userState);
-    List<UsersEntity> findAllByUserDetail_Location(LocationEntity location);
+    List<UsersEntity> findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(LocationEntity location);
 
     @Query("SELECT u FROM UsersEntity u WHERE u.role.id = 1")
     List<UsersEntity> findAllAdmin();

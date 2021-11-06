@@ -24,6 +24,10 @@ public class DepartmentEntity {
     @Column(name ="name", unique = true, length = 15)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name="location_id")
+    private LocationEntity location;
+
     @OneToMany(mappedBy = "department")
     private List<UserDetailEntity> userDetailEntities = new ArrayList<>();
 

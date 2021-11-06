@@ -70,7 +70,7 @@ public class UserDto {
         this.firstName = entity.getUserDetail().getFirstName();
         this.dateOfBirth = entity.getUserDetail().getDateOfBirth();
         this.joinedDate = entity.getUserDetail().getJoinedDate();
-        this.location = entity.getUserDetail().getLocation().getName();
+        this.location = entity.getUserDetail().getDepartment().getLocation().getName();
         this.type = entity.getRole().getName();
         this.state = entity.getUserDetail().getState();
         this.gender = entity.getUserDetail().getGender();
@@ -97,10 +97,6 @@ public class UserDto {
         entity.setFirstLogin(dto.isFirstLogin);
         entity.setUserDetail(userDetail);
         return entity;
-    }
-
-    public List<UserDto> toListDto(List<UsersEntity> listEntity) {
-        return listEntity.stream().map(UserDto::new).collect(Collectors.toList());
     }
 
 }

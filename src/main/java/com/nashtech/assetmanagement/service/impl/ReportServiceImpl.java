@@ -27,7 +27,7 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public List<ReportDTO> getReport(String username) {
-        LocationEntity location = userRepository.findByUserName(username).get().getUserDetail().getLocation();
+        LocationEntity location = userRepository.findByUserName(username).get().getUserDetail().getDepartment().getLocation();
         List<CategoryEntity> categories = categoryRepository.findAll();
         List<ReportDTO> reportList = new ArrayList<>();
         for(CategoryEntity category : categories) {

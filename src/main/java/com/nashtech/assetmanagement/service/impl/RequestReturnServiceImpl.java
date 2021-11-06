@@ -120,9 +120,9 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 
     @Override
     public List<RequestReturnDTO> getAllByAdminLocation(String adminUsername) {
-        LocationEntity location = userRepository.findByUserName(adminUsername).get().getUserDetail().getLocation();
+        LocationEntity location = userRepository.findByUserName(adminUsername).get().getUserDetail().getDepartment().getLocation();
         List<RequestReturnDTO> requestReturnDTOS = requestReturnRepository.findAll().stream()
-                .filter(request -> (request.getRequestBy().getLocation().equals(location)))
+                .filter(request -> (request.getRequestBy().getDepartment().getLocation().equals(location)))
                 .sorted((o1, o2) -> (int) (o1.getId() - o2.getId()))
                 .map(RequestReturnDTO::new).collect(Collectors.toList());
         return requestReturnDTOS;

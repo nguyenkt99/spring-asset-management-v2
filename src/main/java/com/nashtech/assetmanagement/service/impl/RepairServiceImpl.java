@@ -62,7 +62,7 @@ public class RepairServiceImpl implements RepairService {
     @Override
     public List<RepairDTO> getRepairs(String username) {
         Long locationId = userRepository.findByUserName(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")).getUserDetail().getLocation().getId();
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")).getUserDetail().getDepartment().getLocation().getId();
         return repairRepository.findAllByLocationId(locationId).stream().map(RepairDTO::new).collect(Collectors.toList());
     }
 

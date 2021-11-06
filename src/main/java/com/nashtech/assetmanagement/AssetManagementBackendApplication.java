@@ -66,8 +66,10 @@ public class AssetManagementBackendApplication {
 		DepartmentEntity department2 = new DepartmentEntity();
 		department1.setDeptCode("DEV");
 		department1.setName("Developer");
+		department1.setLocation(location1);
 		department2.setDeptCode("MAR");
 		department2.setName("Marketing");
+		department2.setLocation(location1);
 		departmentRepository.save(department1);
 		departmentRepository.save(department2);
 
@@ -83,7 +85,6 @@ public class AssetManagementBackendApplication {
 		userDetail1.setDateOfBirth(ft.parse("1999-02-12"));
 		userDetail1.setJoinedDate(ft.parse("2021-10-12"));
 		userDetail1.setEmail("nguyen@gmail.com");
-		userDetail1.setLocation(location1);
 		userDetail1.setState(UserState.Enable);
 		userDetail1.setDepartment(department1);
 		userDetail1.setUser(user1);
@@ -95,7 +96,6 @@ public class AssetManagementBackendApplication {
 		userDetail2.setDateOfBirth(ft.parse("1999-09-04"));
 		userDetail2.setJoinedDate(ft.parse("2021-10-12"));
 		userDetail2.setEmail("baviet19@gmail.com");
-		userDetail2.setLocation(location1);
 		userDetail2.setState(UserState.Enable);
 		userDetail2.setDepartment(department1);
 		userDetail2.setUser(user2);

@@ -43,10 +43,6 @@ public class UserDetailEntity {
     @Column(name = "email", length = 100)
     private String email;
 
-    @ManyToOne
-    @JoinColumn(name="location_id")
-    private LocationEntity location;
-
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(length = 30)

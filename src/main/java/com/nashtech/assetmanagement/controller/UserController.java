@@ -27,10 +27,8 @@ public class UserController {
     }
 
     @GetMapping("")
-    public ResponseEntity<List<UserDto>> getAll (Authentication authentication) {
-        LocationEntity location = userService.getLocationByUserName(authentication.getName());
-        List<UserDto> userDtos = userService.retrieveUsers(location);
-
+    public ResponseEntity<List<UserDto>> getAll(Authentication authentication) {
+        List<UserDto> userDtos = userService.retrieveUsers(authentication.getName());
         return new ResponseEntity<>(userDtos, HttpStatus.OK);
     }
 
@@ -38,7 +36,6 @@ public class UserController {
     public ResponseEntity<UserDto> getUserByStaffCode(Authentication authentication, @PathVariable("staffCode") String staffCode) {
         LocationEntity location = userService.getLocationByUserName(authentication.getName());
         UserDto userDto = userService.getUserByStaffCode(staffCode, location);
-
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 

@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 public interface AssignmentRepository extends JpaRepository<AssignmentEntity, Long> {
     @Query("select a from AssignmentEntity a "
             + "join UserDetailEntity u on u = a.assignBy "
-            + "where u.location.id = ?1 "
+            + "where u.department.location.id = ?1 "
             + "order by a.id asc")
     List<AssignmentEntity> findAllByAdminLocation(@Param("location") long location);
 

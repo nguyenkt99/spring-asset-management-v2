@@ -36,7 +36,7 @@ public class AssetServiceImpl implements AssetService {
         CategoryEntity cate = categoryRepo.findByPrefix(dto.getCategoryPrefix())
                 .orElseThrow(() -> new ResourceNotFoundException(CATEGORY_NOT_FOUND_ERROR));
         LocationEntity location = userRepo.findByUserName(username)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getLocation();
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getDepartment().getLocation();
         if (dto.getState() != AssetState.NOT_AVAILABLE && dto.getState() != AssetState.AVAILABLE)
             throw new BadRequestException(ASSET_BAD_STATE_ERROR);
         AssetEntity asset = dto.toEntity();
@@ -49,7 +49,7 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public List<AssetDTO> findAllByAdminLocation(String username) {
         LocationEntity location = userRepo.findByUserName(username)
-                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getLocation();
+                .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND_ERROR)).getUserDetail().getDepartment().getLocation();
         return assetRepo.findAll(location.getId()).stream().map(AssetDTO::new).collect(Collectors.toList());
     }
 
@@ -100,7 +100,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public int countByCategory(String prefix, String username) {
-        LocationEntity location = userRepo.findByUserName(username).get().getUserDetail().getLocation();
+        LocationEntity location = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation();
         CategoryEntity category = categoryRepo.findById(prefix).get();
         return assetRepo.countByCategoryEntityAndLocation(category, location);
     }

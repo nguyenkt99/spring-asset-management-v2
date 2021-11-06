@@ -79,12 +79,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto saveUser(UserDto userDto, String username) {
-        LocationEntity location = userRepository.findByUserName(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail().getLocation();
+//        LocationEntity location = userRepository.findByUserName(username)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail().getLocation();
         DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
         UsersEntity usersEntity = userDto.toEntity(userDto);
-        usersEntity.getUserDetail().setLocation(location);
+//        usersEntity.getUserDetail().setLocation(location);
         usersEntity.getUserDetail().setDepartment(department);
         // validate
         if (usersEntity.getUserDetail().getJoinedDate().before(usersEntity.getUserDetail().getDateOfBirth()))
@@ -105,18 +105,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> retrieveUsers(LocationEntity location) {
-        List<UsersEntity> usersEntities = userRepository.findAllByUserDetail_Location(location);
-        usersEntities = usersEntities.stream()
-                .sorted(Comparator.comparing(o -> (o.getStaffCode())))
-                .collect(Collectors.toList());
-        return new UserDto().toListDto(usersEntities);
+    public List<UserDto> retrieveUsers(String username) {
+        LocationEntity location = userRepository.getByUserName(username).getUserDetail().getDepartment().getLocation();
+        List<UsersEntity> usersEntities = userRepository.findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(location);
+        return usersEntities.stream().map(UserDto::new).collect(Collectors.toList());
     }
 
 
     @Override
     public UserDto getUserByStaffCode(String staffCode, LocationEntity location) {
-        UsersEntity user = userRepository.findByStaffCodeAndUserDetail_Location(staffCode, location)
+        UsersEntity user = userRepository.findByStaffCodeAndUserDetail_Department_Location(staffCode, location)
                 .orElseThrow(() -> new ResourceNotFoundException("user not found for this staff code: " + staffCode));
         return new UserDto(user);
     }
@@ -158,7 +156,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public LocationEntity getLocationByUserName(String userName) {
-        return userRepository.getByUserName(userName).getUserDetail().getLocation();
+        return userRepository.getByUserName(userName).getUserDetail().getDepartment().getLocation();
     }
 
     private final String USER_NOT_FOUND = "user is not found.";
@@ -222,7 +220,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> getAdmins() {
         List<UsersEntity> admins = userRepository.findAllAdmin();
-        return new UserDto().toListDto(admins);
+        return admins.stream().map(UserDto::new).collect(Collectors.toList());
     }
 
     // number ranges from 1 (Sunday) to 7 (Saturday)

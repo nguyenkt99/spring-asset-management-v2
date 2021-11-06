@@ -21,11 +21,11 @@ public class LocationEntity {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "location", length = 20, unique = true)
+    @Column(name = "name", length = 20, unique = true)
     private Location name;
 
     @OneToMany(mappedBy = "location")
-    List<UserDetailEntity> users;
+    List<DepartmentEntity> departments;
 
     @OneToMany(mappedBy = "location")
     List<AssetEntity> assets;

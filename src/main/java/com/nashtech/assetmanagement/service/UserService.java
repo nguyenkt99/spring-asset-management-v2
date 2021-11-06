@@ -19,7 +19,7 @@ public interface UserService {
 
     UserDto saveUser(UserDto userDto, String username);
 
-    List<UserDto> retrieveUsers(LocationEntity location);
+    List<UserDto> retrieveUsers(String username);
 
 //    List<UserDto> retrieveUsers(Pageable pageable);
 

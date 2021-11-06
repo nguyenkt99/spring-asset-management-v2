@@ -50,7 +50,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public List<AssignmentDTO> getAllByAdminLocation(String username) {
-        LocationEntity location = userService.findByUserName(username).getUserDetail().getLocation();
+        LocationEntity location = userService.findByUserName(username).getUserDetail().getDepartment().getLocation();
         List<AssignmentDTO> assignmentDTOs = assignmentRepository.findAllByAdminLocation(location.getId())
                 .stream().map(AssignmentDTO::new).collect(Collectors.toList());
         return assignmentDTOs;
@@ -106,7 +106,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             throw new ConflictException("The intended return date is today or future!");
         }
 
-        if (assignTo.getLocation() != assignBy.getLocation()) {
+        if (assignTo.getDepartment().getLocation() != assignBy.getDepartment().getLocation()) {
             throw new ConflictException("The location of assignTo difference from admin!");
         }
 
@@ -242,7 +242,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                 assignment.setAssignBy(assignBy);
 
                 // check location
-                if (assignTo.getLocation() != assignBy.getLocation()) {
+                if (assignTo.getDepartment().getLocation() != assignBy.getDepartment().getLocation()) {
                     throw new ConflictException("The location of assignTo difference from admin!");
                 }
             }
