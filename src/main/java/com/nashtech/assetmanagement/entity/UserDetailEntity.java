@@ -66,11 +66,15 @@ public class UserDetailEntity {
     @OneToMany(mappedBy = "requestBy")
     private List<RequestReturnEntity> requestBys = new ArrayList<>();
 
+    @OneToMany(mappedBy = "requestAssignBy")
+    private List<RequestAssignEntity> requestAssignBy = new ArrayList<>();
+
     @OneToMany(mappedBy = "acceptBy")
     private List<RequestReturnEntity> acceptBys = new ArrayList<>();
 
     @OneToMany(mappedBy = "repairBy")
     private List<RepairEntity> repairBys = new ArrayList<>();
+
 
     @PrePersist
     protected void onCreate() {

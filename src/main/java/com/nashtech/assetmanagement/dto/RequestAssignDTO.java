@@ -40,7 +40,7 @@ public class RequestAssignDTO {
         this.updatedDate = entity.getUpdatedDate();
         this.intendedAssignDate = entity.getIntendedAssignDate();
         this.intendedReturnDate = entity.getIntendedReturnDate();
-        this.requestedBy = entity.getRequestBy().getUser().getUserName();
+        this.requestedBy = entity.getRequestAssignBy().getUser().getUserName();
         this.requestAssignDetails = entity.getRequestAssignDetails().stream().map(RequestAssignDetailDTO::new).collect(Collectors.toList());
     }
 

@@ -60,14 +60,14 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         UserDetailEntity requestBy = userRepository.findByUserName(requestAssignDTO.getRequestedBy())
                 .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
         requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
-        requestAssign.setRequestBy(requestBy);
+        requestAssign.setRequestAssignBy(requestBy);
         requestAssign.setRequestedDate(new Date());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
         RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
 
         String title = "";
-        title = savedReq.getRequestBy().getFirstName() + " " + savedReq.getRequestBy().getLastName()  + " (" + savedReq.getRequestBy().getUser().getUserName() + ")" + " created request for assigning including: ";
+        title = savedReq.getRequestAssignBy().getFirstName() + " " + savedReq.getRequestAssignBy().getLastName()  + " (" + savedReq.getRequestAssignBy().getUser().getUserName() + ")" + " created request for assigning including: ";
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
@@ -142,7 +142,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
 
         String title = "";
-        title = savedReq.getRequestBy().getFirstName() + " " + savedReq.getRequestBy().getLastName()  + " (" + savedReq.getRequestBy().getUser().getUserName() + ")" + " updated assigning request including: ";
+        title = savedReq.getRequestAssignBy().getFirstName() + " " + savedReq.getRequestAssignBy().getLastName()  + " (" + savedReq.getRequestAssignBy().getUser().getUserName() + ")" + " updated assigning request including: ";
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
@@ -163,9 +163,9 @@ public class RequestAssignServiceImpl implements RequestAssignService {
 
         List<RequestAssignEntity> requestAssignEntities = new ArrayList<>();
         if(user.getUser().getRole().getName().equals(RoleName.ROLE_STAFF)) {
-            requestAssignEntities = requestAssignRepository.findByRequestBy_StaffCodeOrderByIdAsc(user.getStaffCode());
+            requestAssignEntities = requestAssignRepository.findByRequestAssignBy_StaffCodeOrderByIdAsc(user.getStaffCode());
         } else {
-            requestAssignEntities = requestAssignRepository.findByRequestBy_Department_LocationAndRequestBy_StateOrderByIdAsc(user.getDepartment().getLocation(), UserState.Enable);
+            requestAssignEntities = requestAssignRepository.findByRequestAssignBy_LocationAndRequestAssignBy_StateOrderByIdAsc(user.getDepartment().getLocation(), UserState.Enable);
         }
 
         return requestAssignEntities.stream().map(RequestAssignDTO::new).collect(Collectors.toList());
@@ -205,7 +205,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         if(!userDetail.getUser().getRole().getName().equals(RoleName.ROLE_ADMIN)) {
-            if(!requestAssign.getRequestBy().getUser().getUserName().equals(username)) {
+            if(!requestAssign.getRequestAssignBy().getUser().getUserName().equals(username)) {
                 throw new ConflictException("User does not own this request for assigning!");
             }
         }

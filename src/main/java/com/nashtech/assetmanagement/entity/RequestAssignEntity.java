@@ -43,7 +43,7 @@ public class RequestAssignEntity {
 
     @ManyToOne
     @JoinColumn(name="request_by")
-    private UserDetailEntity requestBy;
+    private UserDetailEntity requestAssignBy;
 
     @OneToOne(mappedBy = "requestAssign")
     private AssignmentEntity assignment;

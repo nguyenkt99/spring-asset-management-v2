@@ -201,7 +201,11 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        if (usersEntity.getUserDetail().getAssignmentTos().size() > 0) {
+        if (usersEntity.getUserDetail().getAssignmentTos().size() > 0||
+                usersEntity.getUserDetail().getAssignmentsBys().size() > 0||
+                usersEntity.getUserDetail().getRequestAssignBy().size() > 0||
+                usersEntity.getUserDetail().getRequestBys().size() > 0||
+                usersEntity.getUserDetail().getAcceptBys().size() > 0) {
             usersEntity.getUserDetail().setState(UserState.Disabled);
             userRepository.save(usersEntity);
         } else {
