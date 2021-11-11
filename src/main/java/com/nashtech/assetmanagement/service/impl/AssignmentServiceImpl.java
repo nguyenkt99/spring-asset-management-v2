@@ -1,6 +1,7 @@
 package com.nashtech.assetmanagement.service.impl;
 
 import com.nashtech.assetmanagement.constants.*;
+import com.nashtech.assetmanagement.dto.AssetDTO;
 import com.nashtech.assetmanagement.dto.AssignmentDTO;
 import com.nashtech.assetmanagement.dto.AssignmentDetailDTO;
 import com.nashtech.assetmanagement.dto.NotificationDTO;
@@ -396,6 +397,42 @@ public class AssignmentServiceImpl implements AssignmentService {
         } finally {
             return new AssignmentDTO(savedAssignment);
         }
+    }
+
+    @Override
+    public Map<String, Object> checkAssetListAvailable(AssignmentDTO assignmentDTO) {
+        Map<String, Object> result = new HashMap<>();
+        List<Object> assetInvalidList = new ArrayList<>();
+        List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
+
+        if (assignmentDTO.getAssignedDate().after(assignmentDTO.getIntendedReturnDate())) {
+            throw new ConflictException("AssignedDate and IntendedReturnDate are invalid!");
+        }
+
+        boolean isValidDate = true;
+        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
+            AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
+                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
+            for (AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) {
+                if (assignmentDetail.getState() != AssignmentState.DECLINED && assignmentDetail.getState() != AssignmentState.COMPLETED) {
+                    if (!(assignmentDTO.getIntendedReturnDate().before(assignmentDetail.getAssignment().getAssignedDate())
+                            || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))) {
+                        isValidDate = false;
+                        assetInvalidList.add(new AssetDTO(assignmentDetail.getAsset()));
+                    }
+                }
+            }
+        }
+
+        if(!isValidDate) {
+            result.put("status", 409);
+            result.put("error", "Conflict");
+            result.put("assetCodeList", assetInvalidList);
+            result.put("message", "Asset not available in this time!");
+        } else {
+            result.put("statusCode", 200);
+        }
+        return  result;
     }
 
     public void updateAvailableAssetState(AssignmentDetailEntity assignmentDetail) {

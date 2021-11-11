@@ -4,6 +4,7 @@ import com.nashtech.assetmanagement.dto.AssetDTO;
 
 import com.nashtech.assetmanagement.service.AssetService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -15,10 +16,9 @@ import java.util.List;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/asset")
-@RequiredArgsConstructor
 public class AssetController {
-
-    private final AssetService assetService;
+    @Autowired
+    AssetService assetService;
 
     @PostMapping()
     public ResponseEntity<AssetDTO> create(@Valid @RequestBody AssetDTO dto, Authentication authentication) {

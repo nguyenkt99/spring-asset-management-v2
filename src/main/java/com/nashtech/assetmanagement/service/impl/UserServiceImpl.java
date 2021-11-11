@@ -164,23 +164,28 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity<Boolean> canDisableUser(String staffCode, String admin) {
-        UserDetailEntity usersEntity = userRepository.findByStaffCode(staffCode)
+        UserDetailEntity userDetail = userRepository.findByStaffCode(staffCode)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND)).getUserDetail();
-        if(usersEntity.getUser().getUserName().equals(admin)) {
+        if(userDetail.getUser().getUserName().equals(admin)) {
             throw new BadRequestException("You cannot disable yourself!");
         }
 
-        for(AssignmentEntity assignment : usersEntity.getAssignmentTos()) {
-            if(assignment.getState().equals(AssignmentState.WAITING_FOR_ACCEPTANCE) ||
-                    assignment.getState().equals(AssignmentState.ACCEPTED)) {
+        for(AssignmentEntity assignment : userDetail.getAssignmentTos()) {
+            if(assignment.getState().equals(AssignmentState.WAITING_FOR_ACCEPTANCE)
+                    || assignment.getState().equals(AssignmentState.ACCEPTED)
+                    || assignment.getState().equals(AssignmentState.WAITING_FOR_RETURNING)) {
                 throw new ConflictException(DISABLE_CONFLICT);
             }
         }
 
-        if(usersEntity.getAssignmentTos().size() > 0 || usersEntity.getAssignmentsBys().size() > 0) {
-            return ResponseEntity.ok(true); //200 for disable
+        if(userDetail.getAssignmentTos().size() > 0
+                || userDetail.getAssignmentsBys().size() > 0
+                || userDetail.getRequestAssignBys().size() > 0
+                || userDetail.getRequestReturnBys().size() > 0
+                || userDetail.getAcceptBys().size() > 0) {
+            return ResponseEntity.ok(true); // if status code is 200 then disable user
         } else {
-            return ResponseEntity.accepted().body(true);// 202 for delete
+            return ResponseEntity.accepted().body(true); // if status code is 202 then delete user
         }
     }
 
@@ -195,17 +200,18 @@ public class UserServiceImpl implements UserService {
 
         // admin cannot disable user when user has assignment in WAITING_FOR_ACCEPTANCE or ACCEPTED state
         for(AssignmentEntity assignment : usersEntity.getUserDetail().getAssignmentTos()) {
-            if(assignment.getState().equals(AssignmentState.WAITING_FOR_ACCEPTANCE) ||
-                    assignment.getState().equals(AssignmentState.ACCEPTED)) {
+            if(assignment.getState().equals(AssignmentState.WAITING_FOR_ACCEPTANCE)
+                    || assignment.getState().equals(AssignmentState.ACCEPTED)
+                    || assignment.getState().equals(AssignmentState.WAITING_FOR_RETURNING)) {
                 throw new ConflictException(DISABLE_CONFLICT);
             }
         }
 
-        if (usersEntity.getUserDetail().getAssignmentTos().size() > 0||
-                usersEntity.getUserDetail().getAssignmentsBys().size() > 0||
-                usersEntity.getUserDetail().getRequestAssignBy().size() > 0||
-                usersEntity.getUserDetail().getRequestBys().size() > 0||
-                usersEntity.getUserDetail().getAcceptBys().size() > 0) {
+        if (usersEntity.getUserDetail().getAssignmentTos().size() > 0
+                || usersEntity.getUserDetail().getAssignmentsBys().size() > 0
+                || usersEntity.getUserDetail().getRequestAssignBys().size() > 0
+                || usersEntity.getUserDetail().getRequestReturnBys().size() > 0
+                || usersEntity.getUserDetail().getAcceptBys().size() > 0) {
             usersEntity.getUserDetail().setState(UserState.Disabled);
             userRepository.save(usersEntity);
         } else {

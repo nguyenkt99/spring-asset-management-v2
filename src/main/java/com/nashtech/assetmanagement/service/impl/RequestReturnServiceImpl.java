@@ -62,12 +62,17 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         }
 
         for (AssignmentDetailDTO assignmentDetailDTO : requestReturnDTO.getAssignmentDetails()) {
+            boolean assetExists = false;
             for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
                 if (assignmentDetailDTO.getAssetCode().equals(assignmentDetail.getAsset().getAssetCode())) {
+                    assetExists = true;
                     assignmentDetail.setState(AssignmentState.WAITING_FOR_RETURNING);
                     assignmentDetail.setRequestReturn(requestReturn);
                     assignmentDetailsForReturn.add(assignmentDetail);
                 }
+            }
+            if(!assetExists) {
+                throw new ResourceNotFoundException(assignmentDetailDTO.getAssetCode() + " not exists in assignment details!");
             }
         }
 
@@ -168,13 +173,14 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 
         AssignmentEntity assignment = requestReturn.getAssignment();
         for (AssignmentDetailEntity assignmentDetail : assignment.getAssignmentDetails()) {
-            if (assignmentDetail.getState() == AssignmentState.WAITING_FOR_RETURNING) {
+            if ((assignmentDetail.getState() == AssignmentState.WAITING_FOR_RETURNING)
+                && assignmentDetail.getRequestReturn().getId() == id) {
                 assignmentDetail.setState(AssignmentState.COMPLETED);
                 assignmentService.updateAvailableAssetState(assignmentDetail);
             }
         }
 
-        if (!assignment.getAssignmentDetails().stream().anyMatch(x -> x.getState() == null))
+        if (assignment.getAssignmentDetails().stream().allMatch(x -> x.getState() == AssignmentState.COMPLETED))
             assignment.setState(AssignmentState.COMPLETED);
         requestReturn.setAssignment(assignment);
         requestReturn.setReturnedDate(new Date());

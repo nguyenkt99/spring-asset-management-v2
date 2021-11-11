@@ -1,6 +1,7 @@
 package com.nashtech.assetmanagement.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.nashtech.assetmanagement.dto.AssignmentDTO;
 
@@ -12,4 +13,6 @@ public interface AssignmentService {
     AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO);
     boolean deleteAssignment(Long assignmentId);
     AssignmentDTO updateStateAssignment(AssignmentDTO assignmentDTO, String username);
+    Map<String, ?> checkAssetListAvailable(AssignmentDTO assignmentDTO);
+
 }
