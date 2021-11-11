@@ -425,7 +425,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
 
         if(!isValidDate) {
-            result.put("status", 409);
+            result.put("statusCode", 409);
             result.put("error", "Conflict");
             result.put("assetCodeList", assetInvalidList);
             result.put("message", "Asset not available in this time!");
