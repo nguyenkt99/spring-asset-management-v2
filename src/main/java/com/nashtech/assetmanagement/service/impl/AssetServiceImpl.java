@@ -14,6 +14,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -103,5 +106,22 @@ public class AssetServiceImpl implements AssetService {
         LocationEntity location = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation();
         CategoryEntity category = categoryRepo.findById(prefix).get();
         return assetRepo.countByCategoryEntityAndLocation(category, location);
+    }
+
+    @Override
+    public List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username) {
+        Date date1=null;
+        Date date2=null;
+        try {
+            date1 = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
+            date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+        } catch (ParseException e) {
+//            e.printStackTrace();
+            System.out.println("Parse date error!");
+        }
+
+        Long locationId = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation().getId();
+        List<AssetEntity> assets = assetRepo.findAvailableAsset(locationId, date1, date2);
+        return assets.stream().map(AssetDTO::new).collect(Collectors.toList());
     }
 }

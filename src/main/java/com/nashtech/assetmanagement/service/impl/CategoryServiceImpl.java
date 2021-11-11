@@ -78,7 +78,6 @@ public class CategoryServiceImpl implements CategoryService {
 //            e.printStackTrace();
         }
 
-
         return categoryRepo.getSumOfAvailableAssetByCategory(prefix, date1, date2);
     }
 

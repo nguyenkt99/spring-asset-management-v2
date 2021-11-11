@@ -37,7 +37,7 @@ public class CategoryController {
     }
 
     @GetMapping("/{prefix}")
-    public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate ) {
+    public Integer getSumOfAvailableAssetByCategory(@PathVariable String prefix, @RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate) {
         return categoryService.getSumOfAvailableAssetByCategory(prefix, startDate, endDate);
     }
 

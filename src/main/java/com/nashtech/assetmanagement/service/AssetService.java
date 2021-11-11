@@ -20,4 +20,6 @@ public interface AssetService {
     AssetDTO update(AssetDTO dto);
 
     int countByCategory(String prefix, String username);
+
+    List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username);
 }

@@ -24,6 +24,7 @@ public class AssetController {
     public ResponseEntity<AssetDTO> create(@Valid @RequestBody AssetDTO dto, Authentication authentication) {
         return ResponseEntity.ok().body(assetService.create(dto, authentication.getName()));
     }
+
     @GetMapping("/{assetCode}/delete")
     public ResponseEntity<Boolean> canDelete(@PathVariable("assetCode") String assetCode) {
         return ResponseEntity.ok().body(assetService.canDelete(assetCode));
@@ -37,6 +38,11 @@ public class AssetController {
     @GetMapping
     public List<AssetDTO> getAll(Authentication authentication){
         return assetService.findAllByAdminLocation(authentication.getName());
+    }
+
+    @GetMapping("/available")
+    public List<AssetDTO> getAvailableAsset(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, Authentication authentication){
+        return assetService.getAvailableAsset(startDate, endDate, authentication.getName());
     }
 
     @GetMapping("/{assetCode}")
