@@ -186,23 +186,6 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
         List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
-//        // check asset's state
-//        for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
-//            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository.findById(assignmentDetailDTO.getAssetCode())
-//                    .orElseThrow(() -> new ResourceNotFoundException("Asset not found!")).getAssignmentDetails()
-//                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
-//                    .collect(Collectors.toList());
-//            for (AssignmentDetailEntity x : assetAssignmentDetails) {
-//                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
-//                    if (!(assignmentDTO.getIntendedReturnDate().before(x.getAssignment().getAssignedDate())
-//                            || assignmentDTO.getAssignedDate().after(x.getAssignment().getIntendedReturnDate()))) {
-//                        throw new ConflictException("Asset not available in this time!");
-//                    }
-//                } else {
-//                    throw new ConflictException("Date is invalid!");
-//                }
-//            }
-//        }
 
         UserDetailEntity assignTo = assignment.getAssignTo();
         UserDetailEntity assignBy;
@@ -253,25 +236,20 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         for (int i = 0; i < assignmentDetails.size(); i++) {
             boolean isExists = false;
-            if (assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
+            if (assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE
+                    || assignmentDetails.get(i).getState() == AssignmentState.ACCEPTED) {
                 for (int j = 0; j < assignmentDetailDTOs.size(); j++) {
-                    if (assignmentDetailDTOs.get(j).getAssetCode().equalsIgnoreCase(assignmentDetails.get(i).getAsset().getAssetCode())) {
+                    if (assignmentDetailDTOs.get(j).getAssetCode().equals(assignmentDetails.get(i).getAsset().getAssetCode())) {
                         isExists = true;
                         assignmentDetailDTOs.remove(j);
                         j--;
                     }
                 }
 
-                if (isExists == false) {
-                    AssetEntity asset = assignmentDetails.get(i).getAsset();
-//                    if (asset.getAssignmentDetails().stream().allMatch(a -> a.getId() != assignmentDetails.get(index).getId() && (a.getState() == AssignmentState.COMPLETED
-//                            || a.getState() == AssignmentState.DECLINED))) {
-//                        asset.setState(AssetState.AVAILABLE);
-//                    }
-
+                // if new assignment not include asset then set state and remove it
+                if (isExists == false && assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE) {
                     // Check all assignment detail to set asset state is available!!!
                     updateAvailableAssetState(assignmentDetails.get(i));
-
                     assignmentDetails.remove(i);
                     i--;
                 }
@@ -400,7 +378,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public Map<String, Object> checkAssetListAvailable(AssignmentDTO assignmentDTO) {
+    public Map<String, Object> checkAssetListAvailable(AssignmentDTO assignmentDTO) { // has assignment Id
         Map<String, Object> result = new HashMap<>();
         List<Object> assetInvalidList = new ArrayList<>();
         List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
@@ -416,7 +394,8 @@ public class AssignmentServiceImpl implements AssignmentService {
             for (AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) {
                 if (assignmentDetail.getState() != AssignmentState.DECLINED && assignmentDetail.getState() != AssignmentState.COMPLETED) {
                     if (!(assignmentDTO.getIntendedReturnDate().before(assignmentDetail.getAssignment().getAssignedDate())
-                            || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))) {
+                            || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))
+                        && assignmentDetail.getAssignment().getId() != assignmentDTO.getId()) {
                         isValidDate = false;
                         assetInvalidList.add(new AssetDTO(assignmentDetail.getAsset()));
                     }
@@ -437,14 +416,15 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     public void updateAvailableAssetState(AssignmentDetailEntity assignmentDetail) {
         List<AssignmentDetailEntity> allAssetAssignments = assignmentDetail.getAsset().getAssignmentDetails();
-        for (int i = 0; i < allAssetAssignments.size(); i++) {
+        int i;
+        for (i = 0; i < allAssetAssignments.size(); i++) {
             if (allAssetAssignments.get(i).getAssignment().getId() != assignmentDetail.getAssignment().getId()
-                    && (allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE ||
-                    allAssetAssignments.get(i).getState() == AssignmentState.ACCEPTED ||
-                    allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_RETURNING
-            )) break;
-            if (i == allAssetAssignments.size() - 1)
-                allAssetAssignments.get(i).getAsset().setState(AssetState.AVAILABLE);
+                    && (allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE
+                        || allAssetAssignments.get(i).getState() == AssignmentState.ACCEPTED
+                        || allAssetAssignments.get(i).getState() == AssignmentState.WAITING_FOR_RETURNING))
+                break;
         }
+        if (i == allAssetAssignments.size())
+            assignmentDetail.getAsset().setState(AssetState.AVAILABLE);
     }
 }

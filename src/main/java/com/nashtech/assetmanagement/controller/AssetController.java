@@ -41,8 +41,12 @@ public class AssetController {
     }
 
     @GetMapping("/available")
-    public List<AssetDTO> getAvailableAsset(@RequestParam("startDate") String startDate, @RequestParam("endDate") String endDate, Authentication authentication){
-        return assetService.getAvailableAsset(startDate, endDate, authentication.getName());
+    public List<AssetDTO> getAvailableAsset(
+            @RequestParam(value = "assignmentId", required = false) Long assignmentId,
+                                            @RequestParam("startDate") String startDate,
+                                            @RequestParam("endDate") String endDate,
+                                            Authentication authentication){
+        return assetService.getAvailableAsset(startDate, endDate, authentication.getName(), assignmentId);
     }
 
     @GetMapping("/{assetCode}")

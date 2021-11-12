@@ -1,27 +1,29 @@
 package com.nashtech.assetmanagement.service.impl;
 
 import com.nashtech.assetmanagement.constants.AssetState;
+import com.nashtech.assetmanagement.constants.AssignmentState;
 import com.nashtech.assetmanagement.dto.AssetDTO;
 import com.nashtech.assetmanagement.entity.*;
 import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.AssetRepository;
+import com.nashtech.assetmanagement.repository.AssignmentRepository;
 import com.nashtech.assetmanagement.repository.CategoryRepository;
 import com.nashtech.assetmanagement.repository.UserRepository;
 import com.nashtech.assetmanagement.service.AssetService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Data
-@RequiredArgsConstructor
 @Service
 public class AssetServiceImpl implements AssetService {
     private final String CATEGORY_NOT_FOUND_ERROR = "Category prefix not exists.";
@@ -30,9 +32,17 @@ public class AssetServiceImpl implements AssetService {
     private final String ASSET_CONFLICT_ERROR = "Asset belongs to one or more historical assignments.";
     private final String ASSET_BAD_STATE_ERROR = "Asset must be AVAILABLE or NOT_AVAILABLE.";
 
-    private final AssetRepository assetRepo;
-    private final CategoryRepository categoryRepo;
-    private final UserRepository userRepo;
+    @Autowired
+    AssetRepository assetRepo;
+
+    @Autowired
+    CategoryRepository categoryRepo;
+
+    @Autowired
+    UserRepository userRepo;
+
+    @Autowired
+    AssignmentRepository assignmentRepository;
 
     @Override
     public AssetDTO create(AssetDTO dto, String username) {
@@ -109,19 +119,45 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username) {
-        Date date1=null;
-        Date date2=null;
+    public List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username, Long assignmentId) {
+        List<AssetEntity> assets;
+        Date date1 = null, date2 = null;
+
         try {
             date1 = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
             date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
         } catch (ParseException e) {
-//            e.printStackTrace();
             System.out.println("Parse date error!");
         }
 
         Long locationId = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation().getId();
-        List<AssetEntity> assets = assetRepo.findAvailableAsset(locationId, date1, date2);
-        return assets.stream().map(AssetDTO::new).collect(Collectors.toList());
+        assets = assetRepo.findAvailableAsset(locationId, date1, date2);
+
+        if(assignmentId != null) {
+            AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
+            List<AssetEntity> assetOlds = assignment.getAssignmentDetails().stream().map(ad -> ad.getAsset()).collect(Collectors.toList());
+            for(AssetEntity asset : assetOlds) {
+                boolean isExists = false; // flag to check asset already exist in other assignment
+                for(AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) { // all asset's assignment
+                    AssignmentEntity assignment2 = assignmentDetail.getAssignment();
+                    if(assignment2.getState() != AssignmentState.COMPLETED
+                        && assignment2.getState() != AssignmentState.DECLINED) {
+                        if(!(assignment2.getIntendedReturnDate().before(date1) // asset already exist in other assignment
+                                || assignment2.getAssignedDate().after(date2))
+                            && assignment2.getId() != assignmentId) {
+                            isExists = true;
+                            break;
+                        }
+                    }
+                }
+                if(!assets.contains(asset) && !isExists) { // assets list does not include it then
+                    assets.add(asset);
+                }
+            }
+        }
+
+        return assets.stream().sorted(Comparator.comparing(AssetEntity::getAssetCode)).map(AssetDTO::new)
+                .collect(Collectors.toList());
     }
 }

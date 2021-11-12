@@ -4,14 +4,12 @@ import com.nashtech.assetmanagement.chat.MessageModel;
 import com.nashtech.assetmanagement.dto.NotificationDTO;
 import com.nashtech.assetmanagement.service.FirebaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/firebase")
 public class FirebaseController {

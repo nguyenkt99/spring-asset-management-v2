@@ -29,24 +29,6 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
             "group by a.state \n")
     List<StateQuantity> countState(String prefix, long location);
 
-//    @Query(value = "select a \n" +
-//            "from AssetEntity a \n" +
-//            "left join AssignmentDetailEntity ad on a.assetCode = ad.asset.assetCode \n" +
-//            "left join AssignmentEntity a2 on ad.id.assignmentId = a2.id \n" +
-//            "where a.location.id = ?1 and ((?3 < a2.assignedDate or ?2 > a2.intendedReturnDate) or ad.state = 'DECLINED')")
-
-//    @Query(value = "select a1 \n" +
-//        "from AssetEntity a1 \n" +
-//        "where a1.locationId = ?1 and a1.assetCode not in (" +
-//        "select a.assetCode \n" +
-//        "from AssetEntity a \n" +
-//        "left join AssignmentDetailEntity ad on a.assetCode = ad.asset.assetCode \n" +
-//        "left join AssignmentEntity a2 on ad.id.assignmentId = a2.id \n" +
-//        "where a.location.id = ?1 \n" +
-//        "and (?2 between a2.assignedDate and a2.intendedReturnDate) \n" +
-//        "and (?3 between a2.assignedDate and a2.intendedReturnDate) \n")
-//    List<AssetEntity> findAvailableAsset(Long locationId, Date startDate, Date endDate);
-
     @Query(value =
         "select a \n" +
         "from AssetEntity a \n" +
@@ -56,9 +38,10 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
             "left join AssignmentDetailEntity ad on a.assetCode = ad.asset.assetCode \n" +
             "left join AssignmentEntity a2 on ad.id.assignmentId = a2.id \n" +
             "where a.location.id = ?1 " +
-            "and (?2 between a2.assignedDate and a2.intendedReturnDate) \n" +
-            "and (?3 between a2.assignedDate and a2.intendedReturnDate)" +
-            "and a2.state != 'COMPLETED' and a2.state != 'DECLINED')")
+            "and ((?2 between a2.assignedDate and a2.intendedReturnDate) \n" +
+            "or (?3 between a2.assignedDate and a2.intendedReturnDate))" +
+            "and a2.state != 'COMPLETED' and a2.state != 'DECLINED')" +
+        "order by a.assetCode")
     List<AssetEntity> findAvailableAsset(Long locationId, Date startDate, Date endDate);
 
 }

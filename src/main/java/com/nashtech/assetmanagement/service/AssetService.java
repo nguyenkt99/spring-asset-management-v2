@@ -21,5 +21,5 @@ public interface AssetService {
 
     int countByCategory(String prefix, String username);
 
-    List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username);
+    List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username, Long assignmentId);
 }
