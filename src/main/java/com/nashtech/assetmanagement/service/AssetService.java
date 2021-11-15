@@ -9,9 +9,9 @@ public interface AssetService {
 
     List<AssetDTO> findAllByAdminLocation(String username);
 
-    public AssetDTO findByAssetName(String assetName);
+    AssetDTO findByAssetName(String assetName);
 
-    public AssetDTO findByAssetCode(String assetCode);
+    AssetDTO findByAssetCode(String assetCode);
 
     Boolean canDelete(String assetCode);
 

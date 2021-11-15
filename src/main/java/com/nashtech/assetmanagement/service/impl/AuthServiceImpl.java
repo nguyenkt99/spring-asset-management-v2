@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import com.nashtech.assetmanagement.dto.UserDto;
+import com.nashtech.assetmanagement.dto.UserDTO;
 import com.nashtech.assetmanagement.entity.UserDetailEntity;
 import com.nashtech.assetmanagement.constants.UserState;
 import com.nashtech.assetmanagement.exception.ConflictException;
@@ -67,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        if(userDetails.getState().equals(UserState.Disabled)) {
+        if(userDetails.getState().equals(UserState.DISABLED)) {
             throw new ConflictException("Account is disabled!");
         }
 
@@ -79,13 +79,13 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserDto changePasswordAfterfirstLogin(String username, String password) {
+    public UserDTO changePasswordAfterFirstLogin(String username, String password) {
         String passwordEncode = encoder.encode(password);
-        return userService.changePasswordAfterfirstLogin(username, passwordEncode);
+        return userService.changePasswordAfterFirstLogin(username, passwordEncode);
     }
 
     @Override
-    public Boolean changepassword(String username, String oldPassword, String newPassword) {
+    public Boolean changePassword(String username, String oldPassword, String newPassword) {
         HttpStatus statusCode = null;
         try {
             ResponseEntity<?> result = authenticateUser(new LoginRequest(username, oldPassword));
@@ -151,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
                     msg.setSubject("Your password is");
                     msg.setText("Your password is "+pass);
                     try{
-                        changePasswordAfterfirstLogin(entity.getUser().getUserName(),pass);
+                        changePasswordAfterFirstLogin(entity.getUser().getUserName(),pass);
                         javaMailSender.send(msg);
                         return true;
                     }catch (Exception e)

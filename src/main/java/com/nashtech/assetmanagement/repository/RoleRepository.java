@@ -1,10 +1,11 @@
 package com.nashtech.assetmanagement.repository;
 
-
 import com.nashtech.assetmanagement.constants.RoleName;
-import com.nashtech.assetmanagement.entity.RolesEntity;
+import com.nashtech.assetmanagement.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RoleRepository extends JpaRepository<RolesEntity, Long> {
-    RolesEntity getByName(RoleName role);
+import java.util.Optional;
+
+public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
+    Optional<RoleEntity> findByName(RoleName role);
 }

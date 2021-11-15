@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -29,7 +29,7 @@ public class AssignmentDetailDTO {
     private AssignmentState state;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date returnedDate;
+    private LocalDateTime returnedDate;
 
     public AssignmentDetailDTO(AssignmentDetailEntity assignmentDetail) {
         this.assetCode = assignmentDetail.getAsset().getAssetCode();

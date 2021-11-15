@@ -9,8 +9,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,9 +25,6 @@ public class CategoryEntity {
 
     @OneToMany(mappedBy = "categoryEntity")
     private List<AssetEntity> assetEntities = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "categoryEntity")
-//    private List<RequestAssignEntity> requestAssignEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     List<RequestAssignDetailEntity> requestAssignDetailEntities;

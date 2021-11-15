@@ -1,6 +1,6 @@
 package com.nashtech.assetmanagement.controller;
 
-import com.nashtech.assetmanagement.dto.RoleDto;
+import com.nashtech.assetmanagement.dto.RoleDTO;
 import com.nashtech.assetmanagement.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,8 +19,8 @@ public class RoleController {
     @Autowired
     RoleService service;
     @GetMapping("")
-    public ResponseEntity<List<RoleDto>> getAll() {
-        List<RoleDto> dtos = service.listRole();
+    public ResponseEntity<List<RoleDTO>> getAll() {
+        List<RoleDTO> dtos = service.listRole();
         return new ResponseEntity<>(dtos, HttpStatus.OK);
     }
 }

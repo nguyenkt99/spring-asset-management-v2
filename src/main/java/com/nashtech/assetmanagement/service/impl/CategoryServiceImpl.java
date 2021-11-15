@@ -11,9 +11,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,7 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDTO> showAll() {
-        return categoryRepo.findAll().stream().map(CategoryDTO::toDTO).collect(Collectors.toList());
+        return categoryRepo.findAll().stream().map(CategoryDTO::new).collect(Collectors.toList());
     }
 
     @Override
@@ -39,8 +37,8 @@ public class CategoryServiceImpl implements CategoryService {
             throw new ConflictException(EXIST_NAME_CATEGORY_ERROR);
         if (categoryRepo.getByPrefix(dto.getPrefix()) != null)
             throw new BadRequestException(EXIST_PREFIX_CATEGORY_ERROR);
-        CategoryEntity cate = CategoryDTO.toEntity(dto);
-        return CategoryDTO.toDTO(categoryRepo.save(cate));
+        CategoryEntity cate = dto.toEntity();
+        return new CategoryDTO(categoryRepo.save(cate));
     }
 
     @Override
@@ -53,7 +51,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         category.setName(dto.getName());
-        return CategoryDTO.toDTO(categoryRepo.save(category));
+        return new CategoryDTO(categoryRepo.save(category));
     }
 
     @Override
@@ -69,15 +67,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Integer getSumOfAvailableAssetByCategory(String prefix, String startDate, String endDate) {
-        Date date1=null;
-        Date date2=null;
-        try {
-            date1 = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
-            date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
-        } catch (ParseException e) {
-//            e.printStackTrace();
-        }
-
+        LocalDate date1 = LocalDate.parse(startDate);
+        LocalDate date2 = LocalDate.parse(endDate);
         return categoryRepo.getSumOfAvailableAssetByCategory(prefix, date1, date2);
     }
 

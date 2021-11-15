@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,34 +34,10 @@ public class AssignmentDetailEntity {
     private AssignmentState state;
 
     @Column(name = "returned_date")
-    private Date returnedDate;
+    private LocalDateTime returnedDate;
 
     @ManyToOne
     @JoinColumn(name="request_return_id")
     private RequestReturnEntity requestReturn;
-
-
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    private Long id;
-//
-//    @ManyToOne
-//    @JoinColumn(name="assignment_id")
-//    private AssignmentEntity assignment;
-//
-//    @ManyToOne
-//    @JoinColumn(name="asset_code")
-//    private AssetEntity asset;
-//
-//    @Enumerated(EnumType.STRING)
-//    @Column(length = 30,name = "state")
-//    private AssignmentState state;
-//
-//    @Column(name = "returned_date")
-//    private Date returnedDate;
-//
-//    @OneToOne(mappedBy = "assignmentDetail", fetch = FetchType.LAZY)
-//    @PrimaryKeyJoinColumn
-//    private RequestReturnDetailEntity requestReturnDetail;
 
 }

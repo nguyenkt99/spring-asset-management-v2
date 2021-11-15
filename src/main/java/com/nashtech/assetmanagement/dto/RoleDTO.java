@@ -1,7 +1,7 @@
 package com.nashtech.assetmanagement.dto;
 
 import com.nashtech.assetmanagement.constants.RoleName;
-import com.nashtech.assetmanagement.entity.RolesEntity;
+import com.nashtech.assetmanagement.entity.RoleEntity;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,26 +13,26 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-public class RoleDto {
+public class RoleDTO {
     private Long id;
     private RoleName name;
 
-    public RoleDto toDTO(RolesEntity entity) {
-        RoleDto dto = new RoleDto();
+    public RoleDTO toDTO(RoleEntity entity) {
+        RoleDTO dto = new RoleDTO();
         dto.setName(entity.getName());
         dto.setId(entity.getId());
         return dto;
     }
 
-    public RolesEntity toEntity(RoleDto dto) {
-        RolesEntity entity = new RolesEntity();
+    public RoleEntity toEntity(RoleDTO dto) {
+        RoleEntity entity = new RoleEntity();
         entity.setId(dto.getId());
         entity.setName(dto.getName());
         return entity;
     }
 
-    public List<RoleDto> toListDTO(List<RolesEntity> listEntity) {
-        List<RoleDto> listDto = new ArrayList<>();
+    public List<RoleDTO> toListDTO(List<RoleEntity> listEntity) {
+        List<RoleDTO> listDto = new ArrayList<>();
         listEntity.forEach(e -> {
             listDto.add(this.toDTO(e));
         });

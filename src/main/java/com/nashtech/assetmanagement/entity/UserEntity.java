@@ -22,7 +22,7 @@ import javax.validation.constraints.Size;
 @AllArgsConstructor
 @Entity
 @Table(name = "accounts")
-public class UsersEntity {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @GenericGenerator(
@@ -32,7 +32,6 @@ public class UsersEntity {
                     @Parameter(name = StaffCodeGenerator.NUMBER_FORMAT_PARAMETER, value = "%04d") })
     @Column(name = "staff_code", length = 6)
     private String staffCode;
-
 
     @GeneratorType(type = UsernameGenerator.class, when = GenerationTime.INSERT)
     @Column(name = "user_name", length = 20)
@@ -47,12 +46,10 @@ public class UsersEntity {
 
     @ManyToOne
     @JoinColumn(name="role_id")
-    private RolesEntity role;
-
+    private RoleEntity role;
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @PrimaryKeyJoinColumn
     private UserDetailEntity userDetail;
-
 
 }

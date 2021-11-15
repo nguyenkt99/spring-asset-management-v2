@@ -9,8 +9,8 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -35,10 +35,10 @@ public class UserDetailEntity {
     private Gender gender;
 
     @Column(name = "date_of_birth")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @Column(name = "joined_date")
-    private Date joinedDate;
+    private LocalDate joinedDate;
 
     @Column(name = "email", length = 100)
     private String email;
@@ -51,7 +51,7 @@ public class UserDetailEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "staff_code")
-    private UsersEntity user;
+    private UserEntity user;
 
     @ManyToOne
     @JoinColumn(name="dept_code")
@@ -75,10 +75,9 @@ public class UserDetailEntity {
     @OneToMany(mappedBy = "repairBy")
     private List<RepairEntity> repairBys = new ArrayList<>();
 
-
-    @PrePersist
-    protected void onCreate() {
-        this.state = UserState.Enable;
-    }
+//    @PrePersist
+//    protected void onCreate() {
+//        this.state = UserState.ENABLED;
+//    }
 
 }

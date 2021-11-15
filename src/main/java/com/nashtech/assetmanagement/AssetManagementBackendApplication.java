@@ -9,8 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
 @SpringBootApplication
 public class AssetManagementBackendApplication {
@@ -44,9 +43,7 @@ public class AssetManagementBackendApplication {
 		};
 	}
 
-	private void setUp() throws ParseException {
-		SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
-
+	private void setUp() {
 		LocationEntity location1 = new LocationEntity();
 		LocationEntity location2 = new LocationEntity();
 		location1.setName(Location.HCM);
@@ -55,8 +52,8 @@ public class AssetManagementBackendApplication {
 		locationRepository.save(location2);
 
 
-		RolesEntity role1 = new RolesEntity();
-		RolesEntity role2 = new RolesEntity();
+		RoleEntity role1 = new RoleEntity();
+		RoleEntity role2 = new RoleEntity();
 		role1.setName(RoleName.ROLE_ADMIN);
 		role2.setName(RoleName.ROLE_STAFF);
 		roleRepository.save(role1);
@@ -74,18 +71,18 @@ public class AssetManagementBackendApplication {
 		departmentRepository.save(department2);
 
 
-		UsersEntity user1 = new UsersEntity();
+		UserEntity user1 = new UserEntity();
 		UserDetailEntity userDetail1 = new UserDetailEntity();
-		UsersEntity user2 = new UsersEntity();
+		UserEntity user2 = new UserEntity();
 		UserDetailEntity userDetail2 = new UserDetailEntity();
 		user1.setRole(role1);
 		userDetail1.setFirstName("Nguyen");
 		userDetail1.setLastName("Kieu Trung");
 		userDetail1.setGender(Gender.Male);
-		userDetail1.setDateOfBirth(ft.parse("1999-02-12"));
-		userDetail1.setJoinedDate(ft.parse("2021-10-12"));
+		userDetail1.setDateOfBirth(LocalDate.parse("1999-02-12"));
+		userDetail1.setJoinedDate(LocalDate.parse("2021-10-12"));
 		userDetail1.setEmail("nguyen@gmail.com");
-		userDetail1.setState(UserState.Enable);
+		userDetail1.setState(UserState.ENABLED);
 		userDetail1.setDepartment(department1);
 		userDetail1.setUser(user1);
 		user1.setUserDetail(userDetail1);
@@ -93,10 +90,10 @@ public class AssetManagementBackendApplication {
 		userDetail2.setFirstName("Viet");
 		userDetail2.setLastName("Van Ba");
 		userDetail2.setGender(Gender.Male);
-		userDetail2.setDateOfBirth(ft.parse("1999-09-04"));
-		userDetail2.setJoinedDate(ft.parse("2021-10-12"));
+		userDetail2.setDateOfBirth(LocalDate.parse("1999-09-04"));
+		userDetail2.setJoinedDate(LocalDate.parse("2021-10-12"));
 		userDetail2.setEmail("baviet19@gmail.com");
-		userDetail2.setState(UserState.Enable);
+		userDetail2.setState(UserState.ENABLED);
 		userDetail2.setDepartment(department1);
 		userDetail2.setUser(user2);
 		user2.setUserDetail(userDetail2);
@@ -114,11 +111,10 @@ public class AssetManagementBackendApplication {
 		asset1.setAssetName("Dell Latitude 7480");
 		asset1.setSpecification("I5 7300U, 8GB, 256GB");
 		asset1.setState(AssetState.AVAILABLE);
-		asset1.setInstalledDate(ft.parse("2021-10-12"));
+		asset1.setInstalledDate(LocalDate.parse("2021-10-12"));
 		asset1.setCategoryEntity(category1);
 		asset1.setLocation(location1);
 		assetRepository.save(asset1);
-
 
 	}
 }

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 public interface CategoryRepository extends JpaRepository<CategoryEntity, String> {
@@ -24,5 +24,5 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, String
             "left join assignment_details ad on a.asset_code = ad.asset_code \n" +
             "left join assignments a2 on ad.assignment_id = a2.id \n" +
             "where a.category_id = ?1 and ((?3 < a2.assigned_date or ?2 > a2.intended_return_date) or ad.asset_code isnull or ad.state = 'DECLINED')")
-    int getSumOfAvailableAssetByCategory(String prefix, Date startDate, Date endDate);
+    int getSumOfAvailableAssetByCategory(String prefix, LocalDate startDate, LocalDate endDate);
 }

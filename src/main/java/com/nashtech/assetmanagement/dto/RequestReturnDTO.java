@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,14 +24,14 @@ public class RequestReturnDTO {
     private String note;
     private RequestReturnState state;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date requestedDate;
+    private LocalDateTime requestedDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date returnedDate;
+    private LocalDateTime returnedDate;
     private String requestBy;
     private String acceptBy;
     private Long assignmentId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date assignedDate;
+    private LocalDate assignedDate;
     private List<AssignmentDetailDTO> assignmentDetails = new ArrayList<>();
 
     public RequestReturnDTO(RequestReturnEntity entity) {

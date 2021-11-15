@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,7 +78,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         }
 
         requestReturn.setState(RequestReturnState.WAITING_FOR_RETURNING);
-        requestReturn.setRequestedDate(new Date());
+        requestReturn.setRequestedDate(LocalDateTime.now());
         requestReturn.setRequestBy(requestBy);
         requestReturn.setAssignment(assignment);
         requestReturn.setAssignmentDetails(assignmentDetailsForReturn);
@@ -135,7 +136,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 
     @Override
     public void delete(Long id, String username) {
-        UsersEntity requestBy = userRepository.findByUserName(username)
+        UserEntity requestBy = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
         RequestReturnEntity requestReturn = requestReturnRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(REQUEST_NOT_FOUND_ERROR));
@@ -183,7 +184,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         if (assignment.getAssignmentDetails().stream().allMatch(x -> x.getState() == AssignmentState.COMPLETED))
             assignment.setState(AssignmentState.COMPLETED);
         requestReturn.setAssignment(assignment);
-        requestReturn.setReturnedDate(new Date());
+        requestReturn.setReturnedDate(LocalDateTime.now());
         requestReturn.setState(RequestReturnState.COMPLETED);
         requestReturn.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
 

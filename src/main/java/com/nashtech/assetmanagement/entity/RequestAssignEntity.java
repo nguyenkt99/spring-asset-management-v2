@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Getter
@@ -30,16 +31,16 @@ public class RequestAssignEntity {
     private RequestAssignState state;
 
     @Column(name = "requested_date")
-    private Date requestedDate;
+    private LocalDateTime requestedDate;
 
     @Column(name = "updated_date")
-    private Date updatedDate;
+    private LocalDateTime updatedDate;
 
     @Column(name = "intended_assign_date")
-    private Date intendedAssignDate;
+    private LocalDate intendedAssignDate;
 
     @Column(name = "intended_return_date")
-    private Date intendedReturnDate;
+    private LocalDate intendedReturnDate;
 
     @ManyToOne
     @JoinColumn(name="request_by")

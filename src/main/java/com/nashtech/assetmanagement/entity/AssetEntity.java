@@ -10,11 +10,9 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-
 
 @Getter
 @Setter
@@ -23,7 +21,6 @@ import java.util.List;
 @Entity
 @Table(name= "asset")
 public class AssetEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "asset_seq")
     @GenericGenerator(
@@ -45,14 +42,11 @@ public class AssetEntity {
     private String specification;
 
     @Column(name = "installed_date")
-    private Date installedDate;
+    private LocalDate installedDate;
 
     @ManyToOne
     @JoinColumn(name="category_id")
     private CategoryEntity categoryEntity;
-
-//    @OneToMany(mappedBy = "assetEntity")
-//    private List<AssignmentEntity> assignmentEntities = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name="location_id")

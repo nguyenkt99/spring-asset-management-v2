@@ -17,8 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "roles")
-public class RolesEntity {
-
+public class RoleEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,6 +28,6 @@ public class RolesEntity {
     private RoleName name;
 
     @OneToMany(mappedBy = "role")
-    private List<UsersEntity> users = new ArrayList<>();
+    private List<UserEntity> users = new ArrayList<>();
 
 }

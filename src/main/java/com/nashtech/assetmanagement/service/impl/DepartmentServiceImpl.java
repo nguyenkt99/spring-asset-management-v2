@@ -10,20 +10,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-@Data
-@RequiredArgsConstructor
+
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
     @Autowired
     DepartmentRepository departmentRepository;
+
     @Override
     public List<DepartmentDTO> showAll() {
         return departmentRepository.findAll().stream().map(DepartmentDTO::new).collect(Collectors.toList());
-    }
-
-    @Override
-    public DepartmentDTO getDepCode(String depCode) {
-        return null;
     }
 
     @Override

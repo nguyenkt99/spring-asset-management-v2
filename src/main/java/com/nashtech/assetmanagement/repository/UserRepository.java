@@ -7,24 +7,20 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface UserRepository extends JpaRepository<UsersEntity, Long> {
-    UsersEntity getByStaffCode(String staffCode);
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
+    UserEntity getByStaffCode(String staffCode);
 
-    Optional<UsersEntity> findByStaffCode(String staffCode);
+    Optional<UserEntity> findByStaffCode(String staffCode);
 
-    Optional<UsersEntity> findByStaffCodeAndUserDetail_Department_Location(String staffCode, LocationEntity location);
+    Optional<UserEntity> findByStaffCodeAndUserDetail_Department_Location(String staffCode, LocationEntity location);
 
-    UsersEntity getByUserName(String username);
+    UserEntity getByUserName(String username);
 
-    Optional<UsersEntity> findByUserName(String username);
+    Optional<UserEntity> findByUserName(String username);
 
+    List<UserEntity> findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(LocationEntity location);
 
-    Boolean existsByUserName(String username);
-
-
-    List<UsersEntity> findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(LocationEntity location);
-
-    @Query("SELECT u FROM UsersEntity u WHERE u.role.id = 1")
-    List<UsersEntity> findAllAdmin();
+    @Query("SELECT u FROM UserEntity u WHERE u.role.id = 1")
+    List<UserEntity> findAllAdmin();
 
 }

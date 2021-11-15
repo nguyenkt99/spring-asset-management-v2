@@ -1,6 +1,6 @@
 package com.nashtech.assetmanagement.security.services;
 
-import com.nashtech.assetmanagement.entity.UsersEntity;
+import com.nashtech.assetmanagement.entity.UserEntity;
 import com.nashtech.assetmanagement.repository.UserRepository;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,7 +22,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        UsersEntity user = userRepository.findByUserName(username).orElseThrow(
+        UserEntity user = userRepository.findByUserName(username).orElseThrow(
                 () -> new UsernameNotFoundException("User Not Found with -> username: " + username));
 
         return UserDetailsImpl.build(user);

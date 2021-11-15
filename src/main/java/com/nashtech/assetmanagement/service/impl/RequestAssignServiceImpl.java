@@ -18,8 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +47,10 @@ public class RequestAssignServiceImpl implements RequestAssignService {
             CategoryEntity category = categoryRepository.findById(r.getCategoryId())
                     .orElseThrow(() -> new ResourceNotFoundException("Category not found!"));
 
-            int sumOfAvailableAsset = categoryRepository.getSumOfAvailableAssetByCategory(r.getCategoryId(), requestAssignDTO.getIntendedAssignDate(), requestAssignDTO.getIntendedReturnDate());
+            int sumOfAvailableAsset = categoryRepository
+                    .getSumOfAvailableAssetByCategory(r.getCategoryId(),
+                            requestAssignDTO.getIntendedAssignDate(),
+                            requestAssignDTO.getIntendedReturnDate());
             if(r.getQuantity() > sumOfAvailableAsset) {
                 throw new ConflictException("Asset not enough!");
             }
@@ -61,7 +64,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
                 .orElseThrow(() -> new ResourceNotFoundException("RequestBy not found!")).getUserDetail();
         requestAssign.setState(RequestAssignState.WAITING_FOR_ASSIGNING);
         requestAssign.setRequestAssignBy(requestBy);
-        requestAssign.setRequestedDate(new Date());
+        requestAssign.setRequestedDate(LocalDateTime.now());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
         RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
@@ -136,7 +139,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
             }
         }
 
-        requestAssign.setUpdatedDate(new Date());
+        requestAssign.setUpdatedDate(LocalDateTime.now());
         requestAssign.setIntendedAssignDate(requestAssignDTO.getIntendedAssignDate());
         requestAssign.setIntendedReturnDate(requestAssignDTO.getIntendedReturnDate());
         RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
@@ -165,7 +168,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         if(user.getUser().getRole().getName().equals(RoleName.ROLE_STAFF)) {
             requestAssignEntities = requestAssignRepository.findByRequestAssignBy_StaffCodeOrderByIdAsc(user.getStaffCode());
         } else {
-            requestAssignEntities = requestAssignRepository.findByRequestAssignBy_Department_LocationAndRequestAssignBy_StateOrderByIdAsc(user.getDepartment().getLocation(), UserState.Enable);
+            requestAssignEntities = requestAssignRepository.findByRequestAssignBy_Department_LocationAndRequestAssignBy_StateOrderByIdAsc(user.getDepartment().getLocation(), UserState.ENABLED);
         }
 
         return requestAssignEntities.stream().map(RequestAssignDTO::new).collect(Collectors.toList());

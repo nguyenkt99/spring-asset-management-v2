@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -18,7 +19,6 @@ import java.util.List;
 @Entity
 @Table(name = "assignments")
 public class AssignmentEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,16 +31,16 @@ public class AssignmentEntity {
     private AssignmentState state;
 
     @Column(name = "created_date")
-    private Date createdDate;
+    private LocalDateTime createdDate;
 
     @Column(name = "updated_date")
-    private Date updatedDate;
+    private LocalDateTime updatedDate;
 
     @Column(name = "assigned_date")
-    private Date assignedDate;
+    private LocalDate assignedDate;
 
     @Column(name = "intended_return_date")
-    private Date intendedReturnDate;
+    private LocalDate intendedReturnDate;
 
     @ManyToOne
     @JoinColumn(name="assign_to")

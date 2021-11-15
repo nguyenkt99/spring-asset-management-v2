@@ -12,15 +12,11 @@ import com.nashtech.assetmanagement.repository.AssignmentRepository;
 import com.nashtech.assetmanagement.repository.CategoryRepository;
 import com.nashtech.assetmanagement.repository.UserRepository;
 import com.nashtech.assetmanagement.service.AssetService;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,7 +54,6 @@ public class AssetServiceImpl implements AssetService {
         return new AssetDTO(assetRepo.save(asset));
     }
 
-    /// FIND ALL ASSETS
     @Override
     public List<AssetDTO> findAllByAdminLocation(String username) {
         LocationEntity location = userRepo.findByUserName(username)
@@ -67,14 +62,14 @@ public class AssetServiceImpl implements AssetService {
     }
 
     @Override
-    public AssetDTO findByAssetName(String assetName) throws ResourceNotFoundException {
+    public AssetDTO findByAssetName(String assetName) {
         AssetEntity assetEntity = assetRepo.findByAssetName(assetName).orElseThrow(
                 () -> new ResourceNotFoundException("Asset is not found for this asset name:" + assetName));
         return new AssetDTO(assetEntity);
     }
 
     @Override
-    public AssetDTO findByAssetCode(String assetCode) throws ResourceNotFoundException {
+    public AssetDTO findByAssetCode(String assetCode) {
         AssetEntity assetEntity = assetRepo.findByAssetCode(assetCode).orElseThrow(
                 () -> new ResourceNotFoundException("Asset is not found for this asset code:" + assetCode));
         return new AssetDTO(assetEntity);
@@ -121,14 +116,8 @@ public class AssetServiceImpl implements AssetService {
     @Override
     public List<AssetDTO> getAvailableAsset(String startDate, String endDate, String username, Long assignmentId) {
         List<AssetEntity> assets;
-        Date date1 = null, date2 = null;
-
-        try {
-            date1 = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
-            date2 = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
-        } catch (ParseException e) {
-            System.out.println("Parse date error!");
-        }
+        LocalDate date1 = LocalDate.parse(startDate);
+        LocalDate date2 = LocalDate.parse(endDate);
 
         Long locationId = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation().getId();
         assets = assetRepo.findAvailableAsset(locationId, date1, date2);
@@ -143,8 +132,8 @@ public class AssetServiceImpl implements AssetService {
                     AssignmentEntity assignment2 = assignmentDetail.getAssignment();
                     if(assignment2.getState() != AssignmentState.COMPLETED
                         && assignment2.getState() != AssignmentState.DECLINED) {
-                        if(!(assignment2.getIntendedReturnDate().before(date1) // asset already exist in other assignment
-                                || assignment2.getAssignedDate().after(date2))
+                        if(!(assignment2.getIntendedReturnDate().isBefore(date1) // asset already exist in other assignment
+                                || assignment2.getAssignedDate().isAfter(date2))
                             && assignment2.getId() != assignmentId) {
                             isExists = true;
                             break;

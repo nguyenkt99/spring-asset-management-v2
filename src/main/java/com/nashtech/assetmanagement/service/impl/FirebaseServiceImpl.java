@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,7 +48,7 @@ public class FirebaseServiceImpl implements FirebaseService {
     }
 
     @Override
-    public NotificationDTO saveNotification(NotificationDTO notificationDTO) throws ExecutionException, InterruptedException {
+    public NotificationDTO saveNotification(NotificationDTO notificationDTO) {
         Firestore firestore = FirestoreClient.getFirestore();
         String id = firestore.collection("notifications").document().getId();
         ApiFuture<WriteResult> collectionsApiFuture = firestore.collection("notifications")
@@ -59,7 +58,7 @@ public class FirebaseServiceImpl implements FirebaseService {
 
     @Override
     public List<NotificationDTO> getNotifications() {
-        String username = null;
+        String username;
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
                 .getPrincipal();
         String role = userDetails.getAuthorities().stream().map(item -> item.getAuthority())
@@ -100,8 +99,8 @@ public class FirebaseServiceImpl implements FirebaseService {
     public List<MessageModel> getMessages(String sender, String receiver) {
         Firestore firestore = FirestoreClient.getFirestore();
         CollectionReference messages = firestore.collection("messages");
-        ApiFuture<QuerySnapshot> future1 = messages.whereEqualTo("sender", "nguyen").whereEqualTo("receiver", "viet").get();
-        ApiFuture<QuerySnapshot> future2 = messages.whereEqualTo("sender", "viet").whereEqualTo("receiver", "nguyen").get();
+        ApiFuture<QuerySnapshot> future1 = messages.whereEqualTo("sender", sender).whereEqualTo("receiver", receiver).get();
+        ApiFuture<QuerySnapshot> future2 = messages.whereEqualTo("sender", receiver).whereEqualTo("receiver", sender).get();
 
         List<QueryDocumentSnapshot> document1s = null;
         List<QueryDocumentSnapshot> document2s = null;

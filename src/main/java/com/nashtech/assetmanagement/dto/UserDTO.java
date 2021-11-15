@@ -15,16 +15,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserDTO {
     private String staffCode;
 
     @Size(max = 50)
@@ -44,11 +41,11 @@ public class UserDto {
 
     @NotNull(message = "Date of birth date is not null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
 
     @NotNull(message = "Joined date is not null")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date joinedDate;
+    private LocalDate joinedDate;
 
     private String email;
 
@@ -58,14 +55,14 @@ public class UserDto {
 
     private Location location;
 
-    private boolean isFirstLogin;
+    private Boolean isFirstLogin;
 
     @NotNull(message = "Role name can not be null")
     private RoleName type;
 
     private UserState state;
 
-    public UserDto(UsersEntity entity) {
+    public UserDTO(UserEntity entity) {
         this.lastName = entity.getUserDetail().getLastName();
         this.firstName = entity.getUserDetail().getFirstName();
         this.dateOfBirth = entity.getUserDetail().getDateOfBirth();
@@ -83,18 +80,16 @@ public class UserDto {
         this.deptName = entity.getUserDetail().getDepartment().getName();
     }
 
-    public UsersEntity toEntity(UserDto dto) {
-        UsersEntity entity = new UsersEntity();
+    public UserEntity toEntity() {
+        UserEntity entity = new UserEntity();
         UserDetailEntity userDetail = new UserDetailEntity();
         userDetail.setUser(entity);
-        userDetail.setFirstName(dto.getFirstName());
-        userDetail.setLastName(dto.getLastName());
-        userDetail.setDateOfBirth(dto.getDateOfBirth());
-        userDetail.setJoinedDate(dto.getJoinedDate());
-        userDetail.setGender(dto.getGender());
-        userDetail.setEmail(dto.getEmail());
-        userDetail.setState(dto.getState());
-        entity.setFirstLogin(dto.isFirstLogin);
+        userDetail.setFirstName(this.firstName);
+        userDetail.setLastName(this.lastName);
+        userDetail.setGender(this.gender);
+        userDetail.setDateOfBirth(this.dateOfBirth);
+        userDetail.setJoinedDate(this.joinedDate);
+        userDetail.setEmail(this.email);
         entity.setUserDetail(userDetail);
         return entity;
     }

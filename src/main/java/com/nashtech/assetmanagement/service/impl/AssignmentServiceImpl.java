@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -59,7 +59,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public List<AssignmentDTO> getAssignmentsByUser(String username) {
-        UsersEntity user = userRepository.findByUserName(username).get();
+        UserEntity user = userRepository.findByUserName(username).get();
         List<AssignmentDTO> assignmentDTOs = assignmentRepository.findByAssignTo_StaffCodeAndAssignedDateIsLessThanEqualOrderByIdAsc(user.getStaffCode(), new Date())
                 .stream().map(AssignmentDTO::new).collect(Collectors.toList());
         return assignmentDTOs;
@@ -74,6 +74,10 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     public AssignmentDTO save(AssignmentDTO assignmentDTO) {
+        // check assigned date < returned date and both must be today or future
+        if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
+            throw new ConflictException("Date must be today or future!");
+
         AssignmentEntity assignment = assignmentDTO.toEntity();
         RequestAssignEntity requestAssign = null;
         if (assignmentDTO.getRequestAssignId() != null) {
@@ -86,30 +90,8 @@ public class AssignmentServiceImpl implements AssignmentService {
         UserDetailEntity assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
                 .orElseThrow(() -> new ResourceNotFoundException("AssignBy not found!")).getUserDetail();
 
-        // check assigned date and intended date must be today or future
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date todayDate = null;
-        Date assignedDate = null;
-        Date intendedDate = null;
-        try {
-            todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
-            assignedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getAssignedDate()));
-            intendedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getIntendedReturnDate()));
-        } catch (ParseException e) {
-            throw new RuntimeException("Parse date error");
-        }
-
-        if (assignedDate.before(todayDate)) {
-            throw new ConflictException("The assigned date is today or future!");
-        }
-
-        if (intendedDate.before(todayDate)) {
-            throw new ConflictException("The intended return date is today or future!");
-        }
-
-        if (assignTo.getDepartment().getLocation() != assignBy.getDepartment().getLocation()) {
+        if (assignTo.getDepartment().getLocation() != assignBy.getDepartment().getLocation())
             throw new ConflictException("The location of assignTo difference from admin!");
-        }
 
         List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
         List<AssignmentDetailEntity> assignmentDetails = new ArrayList<>();
@@ -117,17 +99,16 @@ public class AssignmentServiceImpl implements AssignmentService {
         for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
-            for (AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) {
-                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
-                    if (assignmentDetail.getState() != AssignmentState.DECLINED && assignmentDetail.getState() != AssignmentState.COMPLETED) {
-                        if (!(assignmentDTO.getIntendedReturnDate().before(assignmentDetail.getAssignment().getAssignedDate())
-                                || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))) {
-                            throw new ConflictException("Asset not available in this time!");
-                        }
-                    }
-                } else {
-                    throw new ConflictException("AssignedDate and IntendedReturnDate are invalid!");
-                }
+
+            List<AssignmentDetailEntity> validAssignmentDetails = asset.getAssignmentDetails().stream().filter(ad ->
+                    ad.getState() != AssignmentState.DECLINED && ad.getState() != AssignmentState.COMPLETED)
+                    .collect(Collectors.toList());
+
+            for (AssignmentDetailEntity ad : validAssignmentDetails) {
+                    AssignmentEntity asm = ad.getAssignment();
+                    if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
+                            asm.getAssignedDate(), asm.getIntendedReturnDate()))
+                        throw new ConflictException("Asset not available in this time!");
             }
         }
 
@@ -141,10 +122,10 @@ public class AssignmentServiceImpl implements AssignmentService {
             assignmentDetails.add(assignmentDetail);
         }
 
-        assignment.setRequestAssign(requestAssign); // able null
+        assignment.setRequestAssign(requestAssign); // requestAssign can be null
         assignment.setAssignTo(assignTo);
         assignment.setAssignBy(assignBy);
-        assignment.setCreatedDate(new Date());
+        assignment.setCreatedDate(LocalDateTime.now());
         assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
         assignment.setAssignmentDetails(assignmentDetails);
 
@@ -178,6 +159,10 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     public AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO) {
+        // check assigned date < returned date and both must be today or future
+        if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
+            throw new ConflictException("Date must be today or future!");
+
         AssignmentEntity assignment = assignmentRepository.findById(assignmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
         if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE && assignment.getState() != AssignmentState.ACCEPTED) {
@@ -189,28 +174,10 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         UserDetailEntity assignTo = assignment.getAssignTo();
         UserDetailEntity assignBy;
+
+        // assignment is waiting for acceptance state, then allow update all information
         if (assignment.getAssignmentDetails().stream()
                 .allMatch(a -> a.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE)) {
-            // check assigned date and intended date must be today or future
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-            Date todayDate = null;
-            Date assignedDate = null;
-            Date intendedDate = null;
-            try {
-                todayDate = dateFormatter.parse(dateFormatter.format(new Date()));
-                assignedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getAssignedDate()));
-                intendedDate = dateFormatter.parse(dateFormatter.format(assignmentDTO.getIntendedReturnDate()));
-            } catch (ParseException e) {
-                throw new RuntimeException("Parse date error");
-            }
-
-            if (assignedDate.before(todayDate)) {
-                throw new ConflictException("The assigned date is today or future!");
-            }
-
-            if (intendedDate.before(todayDate)) {
-                throw new ConflictException("The intended return date is today or future!");
-            }
 
             // case: new assign to
             if (!assignment.getAssignTo().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedTo())) {
@@ -232,6 +199,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             }
 
             assignment.setAssignedDate(assignmentDTO.getAssignedDate());
+            assignment.setIntendedReturnDate(assignmentDTO.getIntendedReturnDate());
         }
 
         for (int i = 0; i < assignmentDetails.size(); i++) {
@@ -269,26 +237,34 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         // check all assignment detail if update assign date or return date!!!
         for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
-            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository
-                    .getById(assignmentDetail.getAsset().getAssetCode()).getAssignmentDetails()
-                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
-                    .collect(Collectors.toList());
-            for (AssignmentDetailEntity a : assetAssignmentDetails) {
-                if (assignmentDTO.getAssignedDate().before(assignmentDTO.getIntendedReturnDate())) {
-                    if (!(assignmentDTO.getIntendedReturnDate().before(a.getAssignment().getAssignedDate())
-                            || assignmentDTO.getAssignedDate().after(a.getAssignment().getIntendedReturnDate()))) {
-                        throw new ConflictException("Asset not available in this time!");
-                    }
-                } else {
-                    throw new ConflictException("Date invalid!");
-                }
+//            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository // can get asset from assignmentDetail directly
+//                    .getById(assignmentDetail.getAsset().getAssetCode()).getAssignmentDetails()
+//                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
+//                    .collect(Collectors.toList());
+//            for (AssignmentDetailEntity a : assetAssignmentDetails) {
+//                AssignmentEntity asm = a.getAssignment();
+//                if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
+//                        asm.getAssignedDate(), asm.getIntendedReturnDate()))
+//                    throw new ConflictException("Asset not available in this time!");
+//            }
+
+            List<AssignmentDetailEntity> validAssignmentDetails = assignmentDetail.getAsset().getAssignmentDetails()
+                    .stream().filter(ad -> ad.getAssignment().getId() != assignmentDTO.getId()
+                            && ad.getState() != AssignmentState.DECLINED
+                            && ad.getState() != AssignmentState.COMPLETED
+                    ).collect(Collectors.toList());
+            for (AssignmentDetailEntity ad : validAssignmentDetails) {
+                AssignmentEntity asm = ad.getAssignment();
+                if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
+                        asm.getAssignedDate(), asm.getIntendedReturnDate()))
+                    throw new ConflictException("Asset not available in this time!");
             }
         }
 
         assignment.setNote(assignmentDTO.getNote());
-        assignment.setIntendedReturnDate(assignmentDTO.getIntendedReturnDate());
-        assignment.setUpdatedDate(new Date());
+        assignment.setUpdatedDate(LocalDateTime.now());
         assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
+        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
 //        SimpleMailMessage msg = new SimpleMailMessage();
 //        msg.setTo(assignTo.getEmail());
@@ -299,7 +275,6 @@ public class AssignmentServiceImpl implements AssignmentService {
 //                "\nDate: "+dateFormatter.format(assignment.getAssignedDate())+
 //                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
 //        javaMailSender.send(msg);
-        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
         String title = "";
         String usernameReceiver = null;
@@ -319,7 +294,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public boolean deleteAssignment(Long assignmentId) {
+    public void deleteAssignment(Long assignmentId) {
         AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
 
@@ -334,7 +309,6 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
 
         assignmentRepository.deleteById(assignmentId);
-        return true;
     }
 
     @Override
@@ -383,22 +357,24 @@ public class AssignmentServiceImpl implements AssignmentService {
         List<Object> assetInvalidList = new ArrayList<>();
         List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
 
-        if (assignmentDTO.getAssignedDate().after(assignmentDTO.getIntendedReturnDate())) {
-            throw new ConflictException("AssignedDate and IntendedReturnDate are invalid!");
-        }
+        if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
+            throw new ConflictException("Date must be today or future!");
 
         boolean isValidDate = true;
         for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTO.getAssetCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
-            for (AssignmentDetailEntity assignmentDetail : asset.getAssignmentDetails()) {
-                if (assignmentDetail.getState() != AssignmentState.DECLINED && assignmentDetail.getState() != AssignmentState.COMPLETED) {
-                    if (!(assignmentDTO.getIntendedReturnDate().before(assignmentDetail.getAssignment().getAssignedDate())
-                            || assignmentDTO.getAssignedDate().after(assignmentDetail.getAssignment().getIntendedReturnDate()))
-                        && assignmentDetail.getAssignment().getId() != assignmentDTO.getId()) {
-                        isValidDate = false;
-                        assetInvalidList.add(new AssetDTO(assignmentDetail.getAsset()));
-                    }
+
+            List<AssignmentDetailEntity> validAssignmentDetails = asset.getAssignmentDetails().stream().filter(ad ->
+                            ad.getState() != AssignmentState.DECLINED  && ad.getState() != AssignmentState.COMPLETED
+                            && ad.getAssignment().getId() != assignmentDTO.getId())
+                    .collect(Collectors.toList());
+            for (AssignmentDetailEntity ad : validAssignmentDetails) {
+                AssignmentEntity asm = ad.getAssignment();
+                if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
+                        asm.getAssignedDate(), asm.getIntendedReturnDate())) {
+                    isValidDate = false;
+                    assetInvalidList.add(new AssetDTO(ad.getAsset()));
                 }
             }
         }
@@ -410,6 +386,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             result.put("message", "Asset not available in this time!");
         } else {
             result.put("statusCode", 200);
+            result.put("message", "Asset available in this time!");
         }
         return  result;
     }
@@ -426,5 +403,19 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
         if (i == allAssetAssignments.size())
             assignmentDetail.getAsset().setState(AssetState.AVAILABLE);
+    }
+
+    private boolean isValidDate(LocalDate assignedDate, LocalDate returnedDate) {
+        // check assigned date and intended date must be today or future
+        LocalDate now = LocalDate.now();
+        if (assignedDate.isBefore(now) || returnedDate.isBefore(now))
+            return false;
+        return true;
+    }
+
+    private boolean isBusyDate(LocalDate inputAssignedDate, LocalDate inputReturnedDate, LocalDate asmAssignedDate, LocalDate asmReturnedDate) {
+        if (!(inputReturnedDate.isBefore(asmAssignedDate) || inputAssignedDate.isAfter(asmReturnedDate)))
+            return true;
+        return false;
     }
 }

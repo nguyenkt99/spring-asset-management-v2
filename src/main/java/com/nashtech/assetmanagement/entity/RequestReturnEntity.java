@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -29,10 +29,10 @@ public class RequestReturnEntity {
     private String note;
 
     @Column(name = "requested_date")
-    private Date requestedDate;
+    private LocalDateTime requestedDate;
 
     @Column(name = "returned_date")
-    private Date returnedDate;
+    private LocalDateTime returnedDate;
 
     @ManyToOne
     @JoinColumn(name="request_by")

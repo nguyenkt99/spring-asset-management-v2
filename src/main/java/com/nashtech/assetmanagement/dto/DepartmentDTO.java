@@ -1,6 +1,5 @@
 package com.nashtech.assetmanagement.dto;
 
-import com.nashtech.assetmanagement.entity.CategoryEntity;
 import com.nashtech.assetmanagement.entity.DepartmentEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

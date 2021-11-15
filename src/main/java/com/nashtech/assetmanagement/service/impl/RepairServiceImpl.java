@@ -14,7 +14,7 @@ import com.nashtech.assetmanagement.service.RepairService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,25 +34,24 @@ public class RepairServiceImpl implements RepairService {
         AssetEntity asset = assetRepository.findByAssetCode(dto.getAssetCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
 
-        if(asset.getState() == AssetState.REPAIRING) {
+        if(asset.getState() == AssetState.REPAIRING)
             throw new ConflictException("Asset is being repaired!");
-        }
 
         UserDetailEntity user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail();
 
         RepairEntity repair = dto.toEntity();
-        List<AssignmentDetailEntity> assetAssignmentDetails = asset.getAssignmentDetails();
-        Date current = new Date();
-        for (AssignmentDetailEntity assignmentDetail : assetAssignmentDetails) {
-            asset.setState(AssetState.REPAIRING);
-            if (assignmentDetail.getAssignment().getAssignedDate().before(current)
-                    && assignmentDetail.getAssignment().getIntendedReturnDate().after(current)
-                    && assignmentDetail.getState() != AssignmentState.COMPLETED)
-                throw new ConflictException("Asset is busy! Please return before create repair.");
-        }
+        List<AssignmentDetailEntity> assignmentDetails = asset.getAssignmentDetails();
+        LocalDate now = LocalDate.now();
 
-//        repair.setStartedDate(current);
+        // check asset must be available
+        if(assignmentDetails.stream().anyMatch(ad ->
+                ad.getAssignment().getAssignedDate().isBefore(now)
+                && ad.getAssignment().getIntendedReturnDate().isAfter(now)
+                && ad.getState() != AssignmentState.COMPLETED && ad.getState() != AssignmentState.DECLINED))
+            throw new ConflictException("Asset is busy! Please return before create repair.");
+
+        asset.setState(AssetState.REPAIRING);
         repair.setAsset(asset);
         repair.setRepairBy(user);
         repair.setState(RepairState.REPAIRING);

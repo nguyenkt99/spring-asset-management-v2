@@ -1,6 +1,6 @@
 package com.nashtech.assetmanagement.generators;
 
-import com.nashtech.assetmanagement.entity.UsersEntity;
+import com.nashtech.assetmanagement.entity.UserEntity;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
@@ -26,13 +26,13 @@ public class StaffCodeGenerator extends SequenceStyleGenerator {
                                  Object object) throws HibernateException {
 
         String prefix = "SD";
-        String QUERY = "from UsersEntity u order by u.id desc";
+        String QUERY = "from UserEntity u order by u.id desc";
         Query query = session.createQuery(QUERY);
         int id = 1;
 
         List<?> resultList = query.getResultList();
         if (resultList.size() > 0) {
-            id = Integer.parseInt(String.valueOf(((UsersEntity) resultList.get(0)).getStaffCode()).replace(prefix , "")) + 1;
+            id = Integer.parseInt(String.valueOf(((UserEntity) resultList.get(0)).getStaffCode()).replace(prefix , "")) + 1;
         }
 
         return prefix + String.format(format, id);

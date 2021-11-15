@@ -1,6 +1,5 @@
 package com.nashtech.assetmanagement.generators;
 
-
 import com.nashtech.assetmanagement.entity.AssetEntity;
 import org.hibernate.HibernateException;
 import org.hibernate.MappingException;
@@ -39,27 +38,18 @@ public class AssetCodeGenerator extends SequenceStyleGenerator {
         String QUERY = "from AssetEntity a where a.id LIKE '"
                 + prefix + "%' and length(a.id)='"+l+"' order by a.id desc";
 
-
         Query query = session.createQuery(QUERY);
         int id = 1;
         if (query.getResultList().size() > 0) {
-
-            System.out.println("__________________--"+((AssetEntity) query.getResultList().get(0)).getAssetCode());
-
             if(isNumeric(((AssetEntity) query.getResultList().get(0)).getAssetCode()
                     .replace(prefix, ""))){
 
                 id = Integer.parseInt(((AssetEntity) query.getResultList().get(0)).getAssetCode()
                         .replace(prefix, "")) + 1;
-                System.out.println("__________________--"+id);
             }
-
-
-
         }
         return prefix + String.format(format, id);
     }
-
 
     @Override
     public void configure(Type type, Properties params,

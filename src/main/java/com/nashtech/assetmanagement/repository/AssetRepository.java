@@ -7,6 +7,7 @@ import com.nashtech.assetmanagement.entity.LocationEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -32,15 +33,15 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
     @Query(value =
         "select a \n" +
         "from AssetEntity a \n" +
-        "where a.location.id = ?1 and a.assetCode not in (" +
+        "where a.location.id = ?1 and a.assetCode not in ( \n" +
             "select a.assetCode \n" +
             "from AssetEntity a \n" +
             "left join AssignmentDetailEntity ad on a.assetCode = ad.asset.assetCode \n" +
             "left join AssignmentEntity a2 on ad.id.assignmentId = a2.id \n" +
-            "where a.location.id = ?1 " +
+            "where a.location.id = ?1 \n" +
             "and not(?2 > a2.intendedReturnDate or ?3 < a2.assignedDate) \n" +
-            "and a2.state != 'COMPLETED' and a2.state != 'DECLINED')" +
+            "and a2.state != 'COMPLETED' and a2.state != 'DECLINED') \n" +
         "order by a.assetCode")
-    List<AssetEntity> findAvailableAsset(Long locationId, Date startDate, Date endDate);
+    List<AssetEntity> findAvailableAsset(Long locationId, LocalDate startDate, LocalDate endDate);
 
 }

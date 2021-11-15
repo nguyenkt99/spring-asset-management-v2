@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Setter
@@ -22,9 +23,9 @@ public class RepairDTO {
     private String note;
     private RepairState state;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date startedDate;
+    private LocalDateTime startedDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date finishedDate;
+    private LocalDateTime finishedDate;
     private String repairedBy;
 
     public RepairDTO (RepairEntity entity){

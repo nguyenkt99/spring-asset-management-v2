@@ -2,7 +2,7 @@ package com.nashtech.assetmanagement.service.impl;
 
 import com.nashtech.assetmanagement.constants.AssignmentState;
 import com.nashtech.assetmanagement.constants.UserState;
-import com.nashtech.assetmanagement.dto.UserDto;
+import com.nashtech.assetmanagement.dto.UserDTO;
 import com.nashtech.assetmanagement.entity.*;
 import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
@@ -13,16 +13,14 @@ import com.nashtech.assetmanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Period;
-import java.time.ZoneId;
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Transactional
 public class UserServiceImpl implements UserService {
     @Autowired
     UserRepository userRepository;
@@ -34,13 +32,10 @@ public class UserServiceImpl implements UserService {
     RoleRepository roleRepository;
 
     @Autowired
-    LocationRepository locationRepository;
-
-    @Autowired
     DepartmentRepository departmentRepository;
 
     @Override
-    public UsersEntity findByUserName(String username) {
+    public UserEntity findByUserName(String username) {
         return userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("Could not found user: " + username));
     }
@@ -51,116 +46,105 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto changePasswordAfterfirstLogin(String username, String passwordEncode) {
-        UsersEntity existUser = findByUserName(username);
+    public UserDTO changePasswordAfterFirstLogin(String username, String passwordEncode) {
+        UserEntity existUser = findByUserName(username);
         existUser.setPassword(passwordEncode);
         existUser.setFirstLogin(false);
 
         try {
-            UsersEntity user = userRepository.save(existUser);
-            return new UserDto(user);
+            UserEntity user = userRepository.save(existUser);
+            return new UserDTO(user);
         } catch (Exception e) {
             throw new BadRequestException("invalid Request");
         }
     }
 
     @Override
-    public UserDto changePassword(String username, String passwordEncode) {
-        UsersEntity existUser = findByUserName(username);
+    public UserDTO changePassword(String username, String passwordEncode) {
+        UserEntity existUser = findByUserName(username);
         existUser.setPassword(passwordEncode);
 
         try {
-            UsersEntity user = userRepository.save(existUser);
-            return new UserDto(user);
+            UserEntity user = userRepository.save(existUser);
+            return new UserDTO(user);
         } catch (Exception e) {
             throw new BadRequestException("invalid Request");
         }
     }
 
     @Override
-    public UserDto saveUser(UserDto userDto, String username) {
-//        LocationEntity location = userRepository.findByUserName(username)
-//                .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail().getLocation();
-        DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
-                .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
-        UsersEntity usersEntity = userDto.toEntity(userDto);
-//        usersEntity.getUserDetail().setLocation(location);
-        usersEntity.getUserDetail().setDepartment(department);
+    public UserDTO saveUser(UserDTO userDTO, String username) {
         // validate
-        if (usersEntity.getUserDetail().getJoinedDate().before(usersEntity.getUserDetail().getDateOfBirth()))
-            throw new InvalidInputException(
-                    "Joined date is not later than Date of Birth. Please select a different date");
-        if (!checkAge(usersEntity.getUserDetail().getDateOfBirth(), usersEntity.getUserDetail().getJoinedDate()))
+        if (userDTO.getJoinedDate().isBefore(userDTO.getDateOfBirth()))
+            throw new InvalidInputException("Joined date is not later than Date of Birth. Please select a different date");
+        if (!checkAge(userDTO.getDateOfBirth(), userDTO.getJoinedDate()))
             throw new InvalidInputException("User is under 18. Please select a different date");
-        int day = getDayNumberOld(usersEntity.getUserDetail().getJoinedDate());
-        if (day == 7 || day == 1)
+        DayOfWeek dayOfWeek = userDTO.getJoinedDate().getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SATURDAY)
             throw new InvalidInputException("Joined date is Saturday or Sunday. Please select a different date");
-        if(userDetailRepository.existsByEmail(userDto.getEmail()))
-            throw new InvalidInputException("Email is exists");
-        usersEntity.setFirstLogin(true);
-        RolesEntity rolesEntity = roleRepository.getByName(userDto.getType());
-        usersEntity.setRole(rolesEntity);
-        usersEntity = userRepository.save(usersEntity);
-        return new UserDto(userRepository.getByStaffCode(usersEntity.getStaffCode()));
-    }
 
-    @Override
-    public List<UserDto> retrieveUsers(String username) {
-        LocationEntity location = userRepository.getByUserName(username).getUserDetail().getDepartment().getLocation();
-        List<UsersEntity> usersEntities = userRepository.findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(location);
-        return usersEntities.stream().map(UserDto::new).collect(Collectors.toList());
-    }
-
-
-    @Override
-    public UserDto getUserByStaffCode(String staffCode, LocationEntity location) {
-        UsersEntity user = userRepository.findByStaffCodeAndUserDetail_Department_Location(staffCode, location)
-                .orElseThrow(() -> new ResourceNotFoundException("user not found for this staff code: " + staffCode));
-        return new UserDto(user);
-    }
-
-    @Override
-    public UserDto updateUser(UserDto userDto) {
-        UsersEntity existUser = userRepository.findByStaffCode(userDto.getStaffCode()).orElseThrow(
-                () -> new ResourceNotFoundException("User not found for this staff code: " + userDto.getStaffCode()));
-        DepartmentEntity department = departmentRepository.findById(userDto.getDeptCode())
+        DepartmentEntity department = departmentRepository.findById(userDTO.getDeptCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
-        RolesEntity rolesEntity = roleRepository.getByName(userDto.getType());
+        RoleEntity role = roleRepository.findByName(userDTO.getType())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found!"));
 
-        if (userDto.getJoinedDate().before(userDto.getDateOfBirth()))
-            throw new InvalidInputException(
-                    "Joined date is not later than Date of Birth. Please select a different date");
-        if (!checkAge(userDto.getDateOfBirth(), userDto.getJoinedDate()))
+        if(userDetailRepository.existsByEmail(userDTO.getEmail()))
+            throw new InvalidInputException("Email is exists");
+
+        UserEntity userEntity = userDTO.toEntity();
+        userEntity.getUserDetail().setDepartment(department);
+        userEntity.getUserDetail().setState(UserState.ENABLED);
+        userEntity.setRole(role);
+        userEntity.setFirstLogin(true);
+        return new UserDTO(userRepository.save(userEntity));
+    }
+
+    @Override
+    public List<UserDTO> retrieveUsers(String username) {
+        LocationEntity location = userRepository.getByUserName(username).getUserDetail().getDepartment().getLocation();
+        List<UserEntity> usersEntities = userRepository.findAllByUserDetail_Department_LocationOrderByStaffCodeAsc(location);
+        return usersEntities.stream().map(UserDTO::new).collect(Collectors.toList());
+    }
+
+    @Override
+    public UserDTO getUserByStaffCode(String staffCode, String username) {
+        LocationEntity location = userRepository.getByUserName(username).getUserDetail().getDepartment().getLocation();
+        UserEntity user = userRepository.findByStaffCodeAndUserDetail_Department_Location(staffCode, location)
+                .orElseThrow(() -> new ResourceNotFoundException("user not found for this staff code: " + staffCode));
+        return new UserDTO(user);
+    }
+
+    @Override
+    public UserDTO updateUser(UserDTO userDTO) {
+        // validate
+        if (userDTO.getJoinedDate().isBefore(userDTO.getDateOfBirth()))
+            throw new InvalidInputException("Joined date is not later than Date of Birth. Please select a different date");
+        if (!checkAge(userDTO.getDateOfBirth(), userDTO.getJoinedDate()))
             throw new InvalidInputException("User is under 18. Please select a different date");
-        int day = getDayNumberOld(userDto.getJoinedDate());
-        if (day == 7 || day == 1)
+        DayOfWeek dayOfWeek = userDTO.getJoinedDate().getDayOfWeek();
+        if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SATURDAY)
             throw new InvalidInputException("Joined date is Saturday or Sunday. Please select a different date");
-        if(existUser.getUserDetail().getEmail()!=null)
-        {
-            if(!existUser.getUserDetail().getEmail().equals(userDto.getEmail()))
-                if(userDetailRepository.existsByEmail(userDto.getEmail()))
-                    throw new InvalidInputException("Email is exists");
-        }else
-        {
-            if(userDetailRepository.existsByEmail(userDto.getEmail()))
-                throw new InvalidInputException("Email is exists");
-        }
-        existUser.getUserDetail().setDateOfBirth(userDto.getDateOfBirth());
-        existUser.getUserDetail().setGender(userDto.getGender());
-        existUser.getUserDetail().setJoinedDate(userDto.getJoinedDate());
-        existUser.getUserDetail().setEmail(userDto.getEmail());
+
+        UserEntity existUser = userRepository.findByStaffCode(userDTO.getStaffCode()).orElseThrow(
+                () -> new ResourceNotFoundException("User not found for this staff code: " + userDTO.getStaffCode()));
+        DepartmentEntity department = departmentRepository.findById(userDTO.getDeptCode())
+                .orElseThrow(() -> new ResourceNotFoundException("Department not found!"));
+        RoleEntity role = roleRepository.findByName(userDTO.getType())
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found!"));
+
+        if(!existUser.getUserDetail().getEmail().equalsIgnoreCase(userDTO.getEmail())
+                && userDetailRepository.existsByEmail(userDTO.getEmail()))
+                throw new InvalidInputException("Email is exists!");
+
+        existUser.getUserDetail().setDateOfBirth(userDTO.getDateOfBirth());
+        existUser.getUserDetail().setGender(userDTO.getGender());
+        existUser.getUserDetail().setJoinedDate(userDTO.getJoinedDate());
+        existUser.getUserDetail().setEmail(userDTO.getEmail());
         existUser.getUserDetail().setDepartment(department);
-        existUser.setRole(rolesEntity);
+        existUser.setRole(role);
 
-        return new UserDto(userRepository.save(existUser));
+        return new UserDTO(userRepository.save(existUser));
     }
-
-    public LocationEntity getLocationByUserName(String userName) {
-        return userRepository.getByUserName(userName).getUserDetail().getDepartment().getLocation();
-    }
-
-    private final String USER_NOT_FOUND = "user is not found.";
-    private final String DISABLE_CONFLICT = "There are valid assignments belonging to this user. Please close all assignments before disabling user.";
 
     @Override
     public ResponseEntity<Boolean> canDisableUser(String staffCode, String admin) {
@@ -191,15 +175,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean disableUser(String staffCode, String admin) {
-        UsersEntity usersEntity = userRepository.findByStaffCode(staffCode)
+        UserEntity userEntity = userRepository.findByStaffCode(staffCode)
                 .orElseThrow(() -> new ResourceNotFoundException(USER_NOT_FOUND));
 
-        if(usersEntity.getUserName().equals(admin)) {
+        if(userEntity.getUserName().equals(admin)) {
             throw new BadRequestException("You cannot disable yourself!");
         }
 
         // admin cannot disable user when user has assignment in WAITING_FOR_ACCEPTANCE or ACCEPTED state
-        for(AssignmentEntity assignment : usersEntity.getUserDetail().getAssignmentTos()) {
+        for(AssignmentEntity assignment : userEntity.getUserDetail().getAssignmentTos()) {
             if(assignment.getState().equals(AssignmentState.WAITING_FOR_ACCEPTANCE)
                     || assignment.getState().equals(AssignmentState.ACCEPTED)
                     || assignment.getState().equals(AssignmentState.WAITING_FOR_RETURNING)) {
@@ -207,45 +191,38 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        if (usersEntity.getUserDetail().getAssignmentTos().size() > 0
-                || usersEntity.getUserDetail().getAssignmentsBys().size() > 0
-                || usersEntity.getUserDetail().getRequestAssignBys().size() > 0
-                || usersEntity.getUserDetail().getRequestReturnBys().size() > 0
-                || usersEntity.getUserDetail().getAcceptBys().size() > 0) {
-            usersEntity.getUserDetail().setState(UserState.Disabled);
-            userRepository.save(usersEntity);
+        if (userEntity.getUserDetail().getAssignmentTos().size() > 0
+                || userEntity.getUserDetail().getAssignmentsBys().size() > 0
+                || userEntity.getUserDetail().getRequestAssignBys().size() > 0
+                || userEntity.getUserDetail().getRequestReturnBys().size() > 0
+                || userEntity.getUserDetail().getAcceptBys().size() > 0) {
+            userEntity.getUserDetail().setState(UserState.DISABLED);
+            userRepository.save(userEntity);
         } else {
-            userRepository.delete(usersEntity);
+            userRepository.delete(userEntity);
         }
         return true;
     }
 
     @Override
-    public UserDto getProfile(String username) {
-        UsersEntity user = userRepository.findByUserName(username)
+    public UserDTO getProfile(String username) {
+        UserEntity user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!"));
-        return new UserDto(user);
+        return new UserDTO(user);
     }
 
     @Override
-    public List<UserDto> getAdmins() {
-        List<UsersEntity> admins = userRepository.findAllAdmin();
-        return admins.stream().map(UserDto::new).collect(Collectors.toList());
-    }
-
-    // number ranges from 1 (Sunday) to 7 (Saturday)
-    private int getDayNumberOld(Date date) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return cal.get(Calendar.DAY_OF_WEEK);
+    public List<UserDTO> getAdmins() {
+        return userRepository.findAllAdmin().stream().map(UserDTO::new).collect(Collectors.toList());
     }
 
     // check age >=18
-    private boolean checkAge(Date dOB, Date joinDate) {
-        LocalDate date1 = dOB.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate date2 = joinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        Period period = Period.between(date1, date2);
+    private boolean checkAge(LocalDate dOB, LocalDate joinDate) {
+        Period period = Period.between(dOB, joinDate);
         return period.getYears() >= 18 ? true : false;
     }
+
+    private final String USER_NOT_FOUND = "User is not found.";
+    private final String DISABLE_CONFLICT = "There are valid assignments belonging to this user. Please close all assignments before disabling user.";
 
 }

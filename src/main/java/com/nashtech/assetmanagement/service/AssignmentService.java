@@ -11,7 +11,7 @@ public interface AssignmentService {
     AssignmentDTO getAssignmentById(Long assignmentId);
     AssignmentDTO save(AssignmentDTO assignmentDTO);
     AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO);
-    boolean deleteAssignment(Long assignmentId);
+    void deleteAssignment(Long assignmentId);
     AssignmentDTO updateStateAssignment(AssignmentDTO assignmentDTO, String username);
     Map<String, ?> checkAssetListAvailable(AssignmentDTO assignmentDTO);
 

@@ -1,7 +1,8 @@
 package com.nashtech.assetmanagement.dto;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,16 +34,16 @@ public class AssignmentDTO {
     private String note;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date createdDate;
+    private LocalDateTime createdDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date updatedDate;
+    private LocalDate updatedDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date assignedDate;
+    private LocalDate assignedDate;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private Date intendedReturnDate;;
+    private LocalDate intendedReturnDate;;
 
 //    private Boolean isCreatedRequest = false;
 
@@ -64,9 +65,7 @@ public class AssignmentDTO {
 
     public AssignmentEntity toEntity() {
         AssignmentEntity assignment = new AssignmentEntity();
-//        assignment.setState(this.state);
         assignment.setNote(this.note);
-//        assignment.setCreatedDate(this.createdDate);
         assignment.setAssignedDate(this.assignedDate);
         assignment.setIntendedReturnDate(this.intendedReturnDate);
         return assignment;

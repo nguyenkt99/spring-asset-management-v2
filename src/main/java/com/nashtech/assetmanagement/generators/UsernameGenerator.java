@@ -1,7 +1,7 @@
 package com.nashtech.assetmanagement.generators;
 
 
-import com.nashtech.assetmanagement.entity.UsersEntity;
+import com.nashtech.assetmanagement.entity.UserEntity;
 import org.hibernate.Session;
 import org.hibernate.tuple.ValueGenerator;
 
@@ -19,23 +19,22 @@ public class UsernameGenerator implements ValueGenerator<String> {
     public String generateValue(Session session, Object o) {
 
         StringBuilder initials = new StringBuilder();
-        for (String s : ((UsersEntity) o).getUserDetail().getLastName().split(" ")) {
+        for (String s : ((UserEntity) o).getUserDetail().getLastName().split(" ")) {
             initials.append(s.charAt(0));
         }
 
-        String username = ((UsersEntity) o).getUserDetail().getFirstName().toLowerCase() + initials.toString().toLowerCase();
+        String username = ((UserEntity) o).getUserDetail().getFirstName().toLowerCase() + initials.toString().toLowerCase();
 
-
-        Query query = session.createQuery("from UsersEntity where userName like :name order by id DESC").setParameter("name", "%" + username + "%").setFlushMode(FlushModeType.COMMIT);
+        Query query = session.createQuery("from UserEntity where userName like :name order by id DESC").setParameter("name", "%" + username + "%").setFlushMode(FlushModeType.COMMIT);
 
         String us = username.toString();
         List<?> resultList = query.getResultList();
-        resultList = resultList.stream().map(e -> (UsersEntity)e)
+        resultList = resultList.stream().map(e -> (UserEntity)e)
                 .filter(e -> Pattern.compile("^\\d*$").matcher(e.getUserName().replace(us, "")).matches())
                 .collect(Collectors.toList());
         int count = resultList.size();
         if (count > 0) {
-            String abc = ((UsersEntity) resultList.get(0)).getUserName()
+            String abc = ((UserEntity) resultList.get(0)).getUserName()
                     .replace(username, "");
 
             if (abc.length() == 0)

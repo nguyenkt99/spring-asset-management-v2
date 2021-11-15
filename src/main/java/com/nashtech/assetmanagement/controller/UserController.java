@@ -1,7 +1,6 @@
 package com.nashtech.assetmanagement.controller;
 
-import com.nashtech.assetmanagement.dto.UserDto;
-import com.nashtech.assetmanagement.entity.LocationEntity;
+import com.nashtech.assetmanagement.dto.UserDTO;
 import com.nashtech.assetmanagement.security.services.UserDetailsImpl;
 import com.nashtech.assetmanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,47 +14,46 @@ import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/user")
 public class UserController {
     @Autowired
     private UserService userService;
 
     @GetMapping("/admins")
-    public ResponseEntity<List<UserDto>> getAdmins() {
-        List<UserDto> userDtos = userService.getAdmins();
-        return new ResponseEntity<>(userDtos, HttpStatus.OK);
+    public ResponseEntity<List<UserDTO>> getAdmins() {
+        List<UserDTO> userDTOS = userService.getAdmins();
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 
     @GetMapping("")
-    public ResponseEntity<List<UserDto>> getAll(Authentication authentication) {
-        List<UserDto> userDtos = userService.retrieveUsers(authentication.getName());
-        return new ResponseEntity<>(userDtos, HttpStatus.OK);
+    public ResponseEntity<List<UserDTO>> getAll(Authentication authentication) {
+        List<UserDTO> userDTOS = userService.retrieveUsers(authentication.getName());
+        return new ResponseEntity<>(userDTOS, HttpStatus.OK);
     }
 
     @GetMapping("/{staffCode}")
-    public ResponseEntity<UserDto> getUserByStaffCode(Authentication authentication, @PathVariable("staffCode") String staffCode) {
-        LocationEntity location = userService.getLocationByUserName(authentication.getName());
-        UserDto userDto = userService.getUserByStaffCode(staffCode, location);
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+    public ResponseEntity<UserDTO> getUserByStaffCode(@PathVariable("staffCode") String staffCode, Authentication authentication) {
+        UserDTO userDTO = userService.getUserByStaffCode(staffCode, authentication.getName());
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
     @GetMapping("/profile")
     public ResponseEntity<?> getProfile(Authentication authentication) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        UserDto userDto = userService.getProfile(userDetails.getUsername());
+        UserDTO userDto = userService.getProfile(userDetails.getUsername());
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
     @PostMapping("")
-    public ResponseEntity<UserDto> addUser(Authentication authentication, @Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDTO> addUser(Authentication authentication, @Valid @RequestBody UserDTO userDto) {
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return new ResponseEntity<>(userService.saveUser(userDto, userDetails.getUsername()), HttpStatus.CREATED);
     }
 
     @PutMapping("/{staffCode}")
-    public ResponseEntity<UserDto> editUser(@PathVariable("staffCode") String staffCode, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDTO> editUser(@PathVariable("staffCode") String staffCode, @RequestBody UserDTO userDto) {
         userDto.setStaffCode(staffCode);
-        UserDto updateUser = userService.updateUser(userDto);
+        UserDTO updateUser = userService.updateUser(userDto);
         return new ResponseEntity<>(updateUser, HttpStatus.OK);
     }
 
