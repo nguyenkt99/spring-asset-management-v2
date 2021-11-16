@@ -60,7 +60,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Override
     public List<AssignmentDTO> getAssignmentsByUser(String username) {
         UserEntity user = userRepository.findByUserName(username).get();
-        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findByAssignTo_StaffCodeAndAssignedDateIsLessThanEqualOrderByIdAsc(user.getStaffCode(), new Date())
+        List<AssignmentDTO> assignmentDTOs = assignmentRepository.findByAssignTo_StaffCodeAndAssignedDateIsLessThanEqualOrderByIdAsc(user.getStaffCode(), LocalDate.now())
                 .stream().map(AssignmentDTO::new).collect(Collectors.toList());
         return assignmentDTOs;
     }
