@@ -28,6 +28,11 @@ public class RequestAssignController {
         return requestAssignService.getAll(authentication.getName());
     }
 
+    @GetMapping("/{requestAssignId}")
+    public RequestAssignDTO getOne(@PathVariable Long requestAssignId, Authentication authentication) {
+        return requestAssignService.getRequestAssign(requestAssignId);
+    }
+
     @PutMapping("/{requestAssignId}")
     public RequestAssignDTO edit(@Valid @RequestBody RequestAssignDTO requestAssignDTO, @PathVariable Long requestAssignId, Authentication authentication) {
         requestAssignDTO.setId(requestAssignId);
@@ -35,12 +40,9 @@ public class RequestAssignController {
         return requestAssignService.update(requestAssignDTO);
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<?> handleRequestAssign(@PathVariable Long id,
-                                           @RequestBody RequestAssignDTO requestAssignDTO,
-                                           Authentication authentication) {
-        requestAssignDTO.setId(id);
-        return requestAssignService.handleRequestAssign(requestAssignDTO);
+    @PutMapping("/{id}/decline")
+    public RequestAssignDTO declineRequestAssign(@PathVariable Long id, @RequestBody String note) {
+        return requestAssignService.declineRequestAssign(id, note);
     }
 
     @DeleteMapping("/{id}")

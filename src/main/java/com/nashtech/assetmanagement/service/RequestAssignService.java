@@ -9,6 +9,7 @@ public interface RequestAssignService {
     RequestAssignDTO save(RequestAssignDTO requestAssignDTO);
     RequestAssignDTO update(RequestAssignDTO requestAssignDTO);
     List<RequestAssignDTO> getAll(String username);
-    ResponseEntity<?> handleRequestAssign(RequestAssignDTO requestAssignDTO);
+    RequestAssignDTO getRequestAssign(Long requestAssignId);
+    RequestAssignDTO declineRequestAssign(Long id, String note);
     void delete(Long id, String username);
 }

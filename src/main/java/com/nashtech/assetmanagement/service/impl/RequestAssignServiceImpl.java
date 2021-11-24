@@ -15,7 +15,6 @@ import com.nashtech.assetmanagement.repository.*;
 import com.nashtech.assetmanagement.service.FirebaseService;
 import com.nashtech.assetmanagement.service.RequestAssignService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -175,28 +174,27 @@ public class RequestAssignServiceImpl implements RequestAssignService {
     }
 
     @Override
-    public ResponseEntity<?> handleRequestAssign(RequestAssignDTO requestAssignDTO) {
-        if(requestAssignDTO.getState() == null) {
-            throw new BadRequestException("State is invalid!");
-        }
+    public RequestAssignDTO getRequestAssign(Long requestAssignId) {
+        RequestAssignEntity requestAssign = requestAssignRepository.findById(requestAssignId)
+                .orElseThrow(() -> new ResourceNotFoundException("Request for assigning not found!"));
+        return new RequestAssignDTO(requestAssign);
+    }
 
-        RequestAssignEntity requestAssign = requestAssignRepository.findById(requestAssignDTO.getId())
+    @Override
+    public RequestAssignDTO declineRequestAssign(Long id, String note) {
+        RequestAssignEntity requestAssign = requestAssignRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Request for assigning not found!"));
         if (requestAssign.getState() != RequestAssignState.WAITING_FOR_ASSIGNING)
             throw new BadRequestException("Request for assigning can be update when state is waiting for assigning!");
 
         // if admin decline then the request has note
-        if(requestAssignDTO.getState().equals(RequestAssignState.DECLINED)) {
-            if(requestAssignDTO.getNote() == null) {
-                throw new BadRequestException("Note cannot be null!");
-            }
-            if(requestAssignDTO.getNote().isEmpty()) {
-                throw new BadRequestException("Note cannot be empty!");
-            }
-            requestAssign.setNote(requestAssignDTO.getNote());
-        }
-        requestAssign.setState(requestAssignDTO.getState());
-        return ResponseEntity.ok(new RequestAssignDTO(requestAssignRepository.save(requestAssign)));
+        if(note == null)
+            throw new BadRequestException("Note cannot be empty!");
+
+        requestAssign.setNote(note);
+        requestAssign.setUpdatedDate(LocalDateTime.now());
+        requestAssign.setState(RequestAssignState.DECLINED);
+        return new RequestAssignDTO(requestAssignRepository.save(requestAssign));
     }
 
     @Override
