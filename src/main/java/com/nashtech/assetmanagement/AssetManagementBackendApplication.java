@@ -39,7 +39,7 @@ public class AssetManagementBackendApplication {
 	@Bean
 	public CommandLineRunner initData() {
 		return (args) -> {
-			setUp();
+//			setUp();
 		};
 	}
 
