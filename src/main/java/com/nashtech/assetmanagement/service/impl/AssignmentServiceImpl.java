@@ -148,7 +148,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             title += a.getAsset().getAssetCode() + ", ";
         }
         usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
@@ -283,7 +283,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             title += a.getAsset().getAssetCode() + ", ";
         }
         usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
@@ -341,7 +341,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             title += a.getAsset().getAssetCode() + ", ";
         }
         usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {

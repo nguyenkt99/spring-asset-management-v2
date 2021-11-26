@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -73,7 +74,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
@@ -148,7 +149,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {

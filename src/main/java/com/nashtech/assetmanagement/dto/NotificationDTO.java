@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -16,4 +18,5 @@ public class NotificationDTO {
     private String username;
     private String title;
     private Boolean isSeen;
+    private Date createdDate;
 }

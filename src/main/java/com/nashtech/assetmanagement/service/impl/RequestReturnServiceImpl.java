@@ -114,7 +114,8 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         } else {
             title = savedReq.getRequestBy().getUser().getUserName() + " created request for retuning with assignment id = " + savedReq.getAssignment().getId();
         }
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
+
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
@@ -212,7 +213,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         }
 
         usernameReceiver = savedReq.getRequestBy().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false);
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {

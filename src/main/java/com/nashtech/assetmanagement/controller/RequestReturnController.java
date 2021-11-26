@@ -21,14 +21,14 @@ public class RequestReturnController {
     RequestReturnService requestService;
 
     @PostMapping
-    public RequestReturnDTO create(@Valid @RequestBody RequestReturnDTO requestReturnDTO, HttpServletRequest request) {
-        requestReturnDTO.setRequestBy(request.getAttribute("userName").toString());
+    public RequestReturnDTO create(@Valid @RequestBody RequestReturnDTO requestReturnDTO, Authentication authentication) {
+        requestReturnDTO.setRequestBy(authentication.getName());
         return requestService.create(requestReturnDTO);
     }
 
     @GetMapping
-    public List<RequestReturnDTO> getAll(HttpServletRequest request) {
-        return requestService.getAllByAdminLocation(request.getAttribute("userName").toString());
+    public List<RequestReturnDTO> getAll(Authentication authentication) {
+        return requestService.getAllByAdminLocation(authentication.getName());
     }
 
     @PutMapping("/{requestId}")

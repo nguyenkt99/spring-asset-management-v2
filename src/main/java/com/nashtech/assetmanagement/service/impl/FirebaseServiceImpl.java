@@ -84,7 +84,9 @@ public class FirebaseServiceImpl implements FirebaseService {
         for (QueryDocumentSnapshot document : documents) {
             notificationDTOs.add(document.toObject(NotificationDTO.class));
         }
-        return notificationDTOs;
+
+        return notificationDTOs.stream().sorted(Comparator.comparing(NotificationDTO::getCreatedDate).reversed())
+                .collect(Collectors.toList());
     }
 
     @Override
