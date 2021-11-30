@@ -33,13 +33,12 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
     @Query(value =
         "select a \n" +
         "from AssetEntity a \n" +
-        "where a.location.id = ?1 and a.assetCode not in ( \n" +
+        "where a.location.id = ?1 and a.state != 'REPAIRING' and a.assetCode not in ( \n" +
             "select a.assetCode \n" +
             "from AssetEntity a \n" +
             "left join AssignmentDetailEntity ad on a.assetCode = ad.asset.assetCode \n" +
             "left join AssignmentEntity a2 on ad.id.assignmentId = a2.id \n" +
-            "where a.location.id = ?1 \n" +
-            "and not(?2 > a2.intendedReturnDate or ?3 < a2.assignedDate) \n" +
+            "where not(?2 > a2.intendedReturnDate or ?3 < a2.assignedDate) \n" +
             "and a2.state != 'COMPLETED' and a2.state != 'DECLINED') \n" +
         "order by a.assetCode")
     List<AssetEntity> findAvailableAsset(Long locationId, LocalDate startDate, LocalDate endDate);

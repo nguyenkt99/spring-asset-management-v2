@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -32,13 +32,13 @@ public class RepairEntity {
     private AssetEntity asset;
 
     @Column(name = "started_date")
-    private LocalDateTime startedDate;
+    private LocalDate startedDate;
 
     @Column(name = "finished_date")
-    private LocalDateTime finishedDate;
+    private LocalDate finishedDate;
 
     @ManyToOne
-    @JoinColumn(name="repair_by")
-    private UserDetailEntity repairBy;
+    @JoinColumn(name="created_by")
+    private UserDetailEntity createdBy;
 
 }

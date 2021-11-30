@@ -8,8 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Setter
 @Getter
@@ -23,10 +22,10 @@ public class RepairDTO {
     private String note;
     private RepairState state;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDateTime startedDate;
+    private LocalDate startedDate;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-    private LocalDateTime finishedDate;
-    private String repairedBy;
+    private LocalDate finishedDate;
+    private String createdBy;
 
     public RepairDTO (RepairEntity entity){
         this.id = entity.getId();
@@ -37,7 +36,7 @@ public class RepairDTO {
         this.state = entity.getState();
         this.startedDate = entity.getStartedDate();
         this.finishedDate = entity.getFinishedDate();
-        this.repairedBy = entity.getRepairBy().getUser().getUserName();
+        this.createdBy = entity.getCreatedBy().getUser().getUserName();
     }
 
     public RepairEntity toEntity(){

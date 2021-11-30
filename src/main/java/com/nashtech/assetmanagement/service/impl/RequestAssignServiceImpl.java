@@ -74,7 +74,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false, new Date());
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, "admin", title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
         }
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, null, title, false, new Date());
+        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, "admin", title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {

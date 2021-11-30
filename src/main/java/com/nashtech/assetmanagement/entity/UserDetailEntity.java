@@ -72,7 +72,7 @@ public class UserDetailEntity {
     @OneToMany(mappedBy = "acceptBy")
     private List<RequestReturnEntity> acceptBys = new ArrayList<>();
 
-    @OneToMany(mappedBy = "repairBy")
+    @OneToMany(mappedBy = "createdBy")
     private List<RepairEntity> repairBys = new ArrayList<>();
 
 //    @PrePersist

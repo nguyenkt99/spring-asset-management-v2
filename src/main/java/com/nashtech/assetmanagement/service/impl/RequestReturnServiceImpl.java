@@ -109,9 +109,10 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         String title = "";
         String usernameReceiver = null;
         if (savedReq.getRequestBy().getUser().getRole().getName() == RoleName.ROLE_ADMIN) {
-            title = "Admin created request for retuning with assignment id = " + savedReq.getAssignment().getId();
             usernameReceiver = savedReq.getAssignment().getAssignTo().getUser().getUserName();
+            title = "Admin created request for retuning with assignment id = " + savedReq.getAssignment().getId();
         } else {
+            usernameReceiver = "admin";
             title = savedReq.getRequestBy().getUser().getUserName() + " created request for retuning with assignment id = " + savedReq.getAssignment().getId();
         }
 

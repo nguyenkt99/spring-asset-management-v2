@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,8 @@ public class RepairServiceImpl implements RepairService {
 
         asset.setState(AssetState.REPAIRING);
         repair.setAsset(asset);
-        repair.setRepairBy(user);
+        repair.setCreatedBy(user);
+        repair.setStartedDate(now);
         repair.setState(RepairState.REPAIRING);
         return new RepairDTO(repairRepository.save(repair));
     }

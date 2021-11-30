@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -29,6 +30,13 @@ public class AssignmentDetailDTO {
     private AssignmentState state;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
+    private LocalDate assignedDate;
+
+    private String assignedTo;
+
+    private String assignedBy;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private LocalDateTime returnedDate;
 
     public AssignmentDetailDTO(AssignmentDetailEntity assignmentDetail) {
@@ -37,6 +45,9 @@ public class AssignmentDetailDTO {
         this.category = assignmentDetail.getAsset().getCategoryEntity().getName();
         this.specs = assignmentDetail.getAsset().getSpecification();
         this.state = assignmentDetail.getState();
+        this.assignedDate = assignmentDetail.getAssignment().getAssignedDate();
+        this.assignedTo = assignmentDetail.getAssignment().getAssignTo().getUser().getUserName();
+        this.assignedBy = assignmentDetail.getAssignment().getAssignBy().getUser().getUserName();
         this.returnedDate = assignmentDetail.getReturnedDate();
     }
 

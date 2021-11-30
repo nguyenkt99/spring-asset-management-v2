@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.constants.AssetState;
 import com.nashtech.assetmanagement.constants.AssignmentState;
 import com.nashtech.assetmanagement.constants.Location;
+import com.nashtech.assetmanagement.constants.RepairState;
 import com.nashtech.assetmanagement.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public class AssetDTO {
     private String categoryName;
     private Boolean isFreeToday = true;
     private List<AssignmentDetailDTO> assignmentDetails = new ArrayList<>();
+    private List<RepairDTO> repairs = new ArrayList<>();
 
     public AssetDTO(AssetEntity asset) {
         this.assetCode = asset.getAssetCode();
@@ -50,16 +52,28 @@ public class AssetDTO {
         this.installedDate = asset.getInstalledDate();
         this.state = asset.getState();
 
-        List<AssignmentDetailEntity> assignmentDetails = asset.getAssignmentDetails();
-        for(AssignmentDetailEntity assignmentDetail : assignmentDetails) {
-            if (assignmentDetail.getState() != AssignmentState.COMPLETED && assignmentDetail.getState() != AssignmentState.DECLINED)
-                if (assignmentDetail.getAssignment().getAssignedDate().isBefore(current)
-                        && assignmentDetail.getAssignment().getIntendedReturnDate().isAfter(current))
-                    this.isFreeToday = false;
+        // asset free today if it is available state or
+        if(asset.getState() == AssetState.REPAIRING)
+            this.isFreeToday = false;
+        else {
+            if(asset.getState() != AssetState.AVAILABLE) {
+                List<AssignmentDetailEntity> assignmentDetails = asset.getAssignmentDetails();
+                for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
+                    if (assignmentDetail.getState() != AssignmentState.COMPLETED
+                            && assignmentDetail.getState() != AssignmentState.DECLINED)
+                        if (!(assignmentDetail.getAssignment().getIntendedReturnDate().isBefore(current)
+                                || assignmentDetail.getAssignment().getAssignedDate().isAfter(current)))
+                            this.isFreeToday = false;
+                }
+            }
         }
 
-        this.assignmentDetails = asset.getAssignmentDetails()
-            .stream().map(AssignmentDetailDTO::new).collect(Collectors.toList());
+        this.assignmentDetails = asset.getAssignmentDetails().stream()
+                .filter(ad -> ad.getState() != AssignmentState.DECLINED)
+                .map(AssignmentDetailDTO::new).collect(Collectors.toList());
+
+        this.repairs = asset.getRepairs().stream()
+                .map(RepairDTO::new).collect(Collectors.toList());
     }
 
     public AssetEntity toEntity(){
