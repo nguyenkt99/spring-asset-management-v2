@@ -12,4 +12,6 @@ public interface RepairService {
     void delete(Long id);
 
     RepairDTO update(RepairDTO dto);
+
+    RepairDTO finishRepair(Long id, String note);
 }

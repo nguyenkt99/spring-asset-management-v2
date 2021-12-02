@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -17,7 +16,7 @@ public class FirebaseController {
     FirebaseService firebaseService;
 
     @GetMapping("/notifications")
-    List<NotificationDTO>  getNotifications() throws ExecutionException, InterruptedException {
+    List<NotificationDTO>  getNotifications() {
         return firebaseService.getNotifications();
     }
 

@@ -189,7 +189,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
             throw new BadRequestException("Request for assigning can be update when state is waiting for assigning!");
 
         // if admin decline then the request has note
-        if(note == null)
+        if(note == null || note.trim().isEmpty())
             throw new BadRequestException("Note cannot be empty!");
 
         requestAssign.setNote(note);

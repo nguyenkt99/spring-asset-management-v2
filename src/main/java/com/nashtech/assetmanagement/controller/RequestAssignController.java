@@ -46,7 +46,7 @@ public class RequestAssignController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> acceptRequest(@PathVariable Long id, Authentication authentication) {
+    public ResponseEntity<Void> deleteRequest(@PathVariable Long id, Authentication authentication) {
         requestAssignService.delete(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }

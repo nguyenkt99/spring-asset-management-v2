@@ -146,9 +146,9 @@ public class RequestReturnServiceImpl implements RequestReturnService {
             throw new BadRequestException(REQUEST_STATE_INVALID_ERROR);
         }
 
-        if (!requestBy.getUserName().equals(requestReturn.getRequestBy().getUser().getUserName())) {
-            throw new BadRequestException("The request wasn't created by user so cannot delete!");
-        }
+//        if (!requestBy.getUserName().equals(requestReturn.getRequestBy().getUser().getUserName())) {
+//            throw new BadRequestException("The request wasn't created by user so cannot delete!");
+//        }
 
         AssignmentEntity assignment = requestReturn.getAssignment();
         List<AssignmentDetailEntity> assignmentDetails = requestReturn.getAssignmentDetails();

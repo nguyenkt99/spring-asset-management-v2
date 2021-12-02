@@ -18,6 +18,7 @@ public class RepairDTO {
     private Long id;
     private String assetCode;
     private String assetName;
+    private String categoryName;
     private String specification;
     private String note;
     private RepairState state;
@@ -31,6 +32,7 @@ public class RepairDTO {
         this.id = entity.getId();
         this.assetCode = entity.getAsset().getAssetCode();
         this.assetName = entity.getAsset().getAssetName();
+        this.categoryName = entity.getAsset().getCategoryEntity().getName();
         this.specification = entity.getAsset().getSpecification();
         this.note = entity.getNote();
         this.state = entity.getState();

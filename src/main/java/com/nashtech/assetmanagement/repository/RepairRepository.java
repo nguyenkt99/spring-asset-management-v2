@@ -10,6 +10,7 @@ public interface RepairRepository extends JpaRepository<RepairEntity, Long> {
     @Query("select r " +
             "from RepairEntity r " +
             "left join AssetEntity a on r.asset.assetCode = a.assetCode " +
-            "where a.location.id = ?1")
+            "where a.location.id = ?1 " +
+            "order by r.id")
     List<RepairEntity> findAllByLocationId(Long locationId);
 }

@@ -27,6 +27,11 @@ public class RepairController {
         return repairService.create(dto, authentication.getName());
     }
 
+    @PutMapping("/{id}")
+    public RepairDTO finishRepair(@PathVariable Long id, @RequestBody String note) {
+        return repairService.finishRepair(id, note);
+    }
+
     @DeleteMapping("/{repairId}")
     public void delete(@PathVariable Long repairId) {
         repairService.delete(repairId);

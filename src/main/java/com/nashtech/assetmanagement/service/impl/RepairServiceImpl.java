@@ -5,6 +5,7 @@ import com.nashtech.assetmanagement.constants.AssignmentState;
 import com.nashtech.assetmanagement.constants.RepairState;
 import com.nashtech.assetmanagement.dto.RepairDTO;
 import com.nashtech.assetmanagement.entity.*;
+import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.exception.ConflictException;
 import com.nashtech.assetmanagement.exception.ResourceNotFoundException;
 import com.nashtech.assetmanagement.repository.AssetRepository;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,8 +35,8 @@ public class RepairServiceImpl implements RepairService {
         AssetEntity asset = assetRepository.findByAssetCode(dto.getAssetCode())
                 .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
 
-        if(asset.getState() == AssetState.REPAIRING)
-            throw new ConflictException("Asset is being repaired!");
+        if(asset.getState() != AssetState.AVAILABLE)
+            throw new ConflictException("Asset can be repaired when it is available state!");
 
         UserDetailEntity user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found!")).getUserDetail();
@@ -71,6 +71,9 @@ public class RepairServiceImpl implements RepairService {
     public void delete(Long id) {
         RepairEntity repair = repairRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("The repair not found!"));
+        if(repair.getState() == RepairState.FINISHED)
+            throw new ResourceNotFoundException("To delete, the repair must be repairing state!");
+
         repair.getAsset().setState(AssetState.AVAILABLE);
         repairRepository.deleteById(id);
     }
@@ -78,5 +81,22 @@ public class RepairServiceImpl implements RepairService {
     @Override
     public RepairDTO update(RepairDTO dto) {
         return null;
+    }
+
+    @Override
+    public RepairDTO finishRepair(Long id, String note) {
+        RepairEntity repair = repairRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Repair not found!"));
+        if(repair.getState() != RepairState.REPAIRING)
+            throw new ConflictException("The repair can be finish when state is waiting for assigning!");
+
+        if(note == null || note.trim().isEmpty())
+            throw new BadRequestException("Note cannot be empty!");
+
+        repair.setNote(note);
+        repair.setState(RepairState.FINISHED);
+        repair.getAsset().setState(AssetState.AVAILABLE);
+        repair.setFinishedDate(LocalDate.now());
+        return new RepairDTO(repairRepository.save(repair));
     }
 }
