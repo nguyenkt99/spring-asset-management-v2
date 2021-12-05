@@ -17,7 +17,7 @@ import java.util.List;
 @Table(name = "categories")
 public class CategoryEntity {
     @Id
-    @Column(name = "prefix", length = 2)
+    @Column(name = "category_code", length = 2)
     private String prefix;
 
     @Column(name ="name", unique = true, length = 15)

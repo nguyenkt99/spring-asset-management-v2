@@ -36,14 +36,14 @@ public class RequestAssignEntity {
     @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
-    @Column(name = "intended_assign_date")
+    @Column(name = "assigned_date")
     private LocalDate intendedAssignDate;
 
-    @Column(name = "intended_return_date")
+    @Column(name = "returned_date")
     private LocalDate intendedReturnDate;
 
     @ManyToOne
-    @JoinColumn(name="request_by")
+    @JoinColumn(name="requested_by")
     private UserDetailEntity requestAssignBy;
 
     @OneToOne(mappedBy = "requestAssign")

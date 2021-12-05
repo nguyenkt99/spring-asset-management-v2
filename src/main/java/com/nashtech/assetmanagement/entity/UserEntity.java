@@ -34,7 +34,7 @@ public class UserEntity {
     private String staffCode;
 
     @GeneratorType(type = UsernameGenerator.class, when = GenerationTime.INSERT)
-    @Column(name = "user_name", length = 20)
+    @Column(name = "username", length = 20)
     private String userName;
 
     @Size(min=6, max = 100)

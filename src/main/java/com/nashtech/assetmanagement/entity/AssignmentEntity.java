@@ -39,15 +39,15 @@ public class AssignmentEntity {
     @Column(name = "assigned_date")
     private LocalDate assignedDate;
 
-    @Column(name = "intended_return_date")
+    @Column(name = "returned_date")
     private LocalDate intendedReturnDate;
 
     @ManyToOne
-    @JoinColumn(name="assign_to")
+    @JoinColumn(name="assigned_to")
     private UserDetailEntity assignTo;
 
     @ManyToOne
-    @JoinColumn(name="assign_by")
+    @JoinColumn(name="assigned_by")
     private UserDetailEntity assignBy;
 
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)

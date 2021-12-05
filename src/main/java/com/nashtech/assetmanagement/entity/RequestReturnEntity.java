@@ -35,11 +35,11 @@ public class RequestReturnEntity {
     private LocalDateTime returnedDate;
 
     @ManyToOne
-    @JoinColumn(name="request_by")
+    @JoinColumn(name="requested_by")
     private UserDetailEntity requestBy;
 
     @ManyToOne
-    @JoinColumn(name="accept_by")
+    @JoinColumn(name="accepted_by")
     private UserDetailEntity acceptBy;
 
     @ManyToOne

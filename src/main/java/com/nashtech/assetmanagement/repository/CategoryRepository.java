@@ -20,9 +20,9 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, String
     Optional<CategoryEntity> findByPrefix(String prefix);
 
     @Query(nativeQuery = true, value = "select count(*)\n" +
-            "from asset a \n" +
+            "from assets a \n" +
             "left join assignment_details ad on a.asset_code = ad.asset_code \n" +
             "left join assignments a2 on ad.assignment_id = a2.id \n" +
-            "where a.category_id = ?1 and ((?3 < a2.assigned_date or ?2 > a2.intended_return_date) or ad.asset_code isnull or ad.state = 'DECLINED')")
+            "where a.category_id = ?1 and ((?3 < a2.assigned_date or ?2 > a2.returned_date) or ad.asset_code isnull or ad.state = 'DECLINED')")
     int getSumOfAvailableAssetByCategory(String prefix, LocalDate startDate, LocalDate endDate);
 }

@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name= "asset")
+@Table(name= "assets")
 public class AssetEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "asset_seq")
