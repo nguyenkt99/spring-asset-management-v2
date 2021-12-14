@@ -1,6 +1,7 @@
 package com.nashtech.assetmanagement.repository;
 
-import com.nashtech.assetmanagement.dto.StateQuantity;
+import com.nashtech.assetmanagement.dto.report.ReportNewDTO;
+import com.nashtech.assetmanagement.dto.report.StateQuantity;
 import com.nashtech.assetmanagement.entity.AssetEntity;
 import com.nashtech.assetmanagement.entity.CategoryEntity;
 import com.nashtech.assetmanagement.entity.LocationEntity;
@@ -8,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,4 +43,17 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
         "order by a.assetCode")
     List<AssetEntity> findAvailableAsset(Long locationId, LocalDate startDate, LocalDate endDate);
 
+
+/* Report */
+    @Query(value = "select c.name as category, \n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code) as total,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'ASSIGNED') as assigned,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'AVAILABLE') as available,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'NOT_AVAILABLE') as notAvailable,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'WAITING_FOR_RECYCLING') as waitingForRecycle,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'RECYCLED') as recycled,\n" +
+            " (select count(*) from assets a where a.location_id = ?1 and a.category_id = c.category_code and a.state = 'REPAIRING') as repairing\n" +
+            " from categories c \n" +
+            " order by c.name", nativeQuery = true)
+    List<ReportNewDTO> getReports(Long locationId);
 }
