@@ -25,8 +25,8 @@ public class LocationEntity {
     private Location name;
 
     @OneToMany(mappedBy = "location")
-    List<DepartmentEntity> departments;
+    private List<DepartmentEntity> departments;
 
     @OneToMany(mappedBy = "location")
-    List<AssetEntity> assets;
+    private List<AssetEntity> assets;
 }

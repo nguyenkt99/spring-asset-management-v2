@@ -27,5 +27,5 @@ public class CategoryEntity {
     private List<AssetEntity> assetEntities = new ArrayList<>();
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RequestAssignDetailEntity> requestAssignDetailEntities;
+    private List<RequestAssignDetailEntity> requestAssignDetailEntities;
 }

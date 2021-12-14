@@ -52,7 +52,7 @@ public class RequestAssignServiceImpl implements RequestAssignService {
                             requestAssignDTO.getIntendedAssignDate(),
                             requestAssignDTO.getIntendedReturnDate());
             if(r.getQuantity() > sumOfAvailableAsset) {
-                throw new ConflictException("Asset not enough!");
+                throw new ConflictException(category.getName() + " is not enough!");
             }
             requestAssignDetail.setCategory(category);
             requestAssignDetail.setRequestAssign(requestAssign);

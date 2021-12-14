@@ -119,6 +119,9 @@ public class AssetServiceImpl implements AssetService {
         LocalDate date1 = LocalDate.parse(startDate);
         LocalDate date2 = LocalDate.parse(endDate);
 
+        if(date2.isBefore(date1))
+            throw new BadRequestException("Assigned date must be before returned date!");
+
         Long locationId = userRepo.findByUserName(username).get().getUserDetail().getDepartment().getLocation().getId();
         assets = assetRepo.findAvailableAsset(locationId, date1, date2);
 

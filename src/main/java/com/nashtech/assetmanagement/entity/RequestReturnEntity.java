@@ -47,6 +47,6 @@ public class RequestReturnEntity {
     private AssignmentEntity assignment;
 
     @OneToMany(mappedBy = "requestReturn", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<AssignmentDetailEntity> assignmentDetails;
+    private List<AssignmentDetailEntity> assignmentDetails;
 
 }

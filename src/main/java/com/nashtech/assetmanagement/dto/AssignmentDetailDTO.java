@@ -48,7 +48,10 @@ public class AssignmentDetailDTO {
         this.assignedDate = assignmentDetail.getAssignment().getAssignedDate();
         this.assignedTo = assignmentDetail.getAssignment().getAssignTo().getUser().getUserName();
         this.assignedBy = assignmentDetail.getAssignment().getAssignBy().getUser().getUserName();
-        this.returnedDate = assignmentDetail.getReturnedDate();
+//        this.returnedDate = assignmentDetail.getReturnedDate();
+        if(assignmentDetail.getRequestReturn() != null) {
+            this.returnedDate = assignmentDetail.getRequestReturn().getReturnedDate();
+        }
     }
 
 }

@@ -5,7 +5,8 @@ import com.nashtech.assetmanagement.dto.DepartmentDTO;
 import java.util.List;
 
 public interface DepartmentService {
-    List<DepartmentDTO> showAll();
-    DepartmentDTO create(DepartmentDTO dto);
-    DepartmentDTO update(DepartmentDTO dto);
+    List<DepartmentDTO> getDepartments(String username);
+    DepartmentDTO createDepartment(DepartmentDTO dto, String username);
+    DepartmentDTO updateDepartment(DepartmentDTO dto);
+    void deleteDepartment(String deptCode);
 }

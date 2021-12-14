@@ -25,7 +25,7 @@ public interface AssetRepository extends JpaRepository<AssetEntity, String> {
     int countByCategoryEntityAndLocation(CategoryEntity category, LocationEntity location);
 
     @Query(nativeQuery = true, value = "select a.state, count(*) quantity \n" +
-            "from asset a \n" +
+            "from assets a \n" +
             "where a.category_id = ?1 and a.location_id = ?2 \n" +
             "group by a.state \n")
     List<StateQuantity> countState(String prefix, long location);

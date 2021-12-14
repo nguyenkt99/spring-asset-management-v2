@@ -50,6 +50,6 @@ public class RequestAssignEntity {
     private AssignmentEntity assignment;
 
     @OneToMany(mappedBy = "requestAssign", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RequestAssignDetailEntity> requestAssignDetails = new ArrayList<>();
+    private List<RequestAssignDetailEntity> requestAssignDetails = new ArrayList<>();
 
 }

@@ -3,11 +3,8 @@ package com.nashtech.assetmanagement.controller;
 import com.nashtech.assetmanagement.dto.DepartmentDTO;
 import com.nashtech.assetmanagement.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,8 +14,25 @@ import java.util.List;
 public class DepartmentController {
     @Autowired
     DepartmentService departmentService;
-    @GetMapping()
-    public ResponseEntity<List<DepartmentDTO>> showAll(){
-        return ResponseEntity.ok().body(departmentService.showAll());
+
+    @GetMapping
+    public List<DepartmentDTO> showAll(Authentication authentication){
+        return departmentService.getDepartments(authentication.getName());
+    }
+
+    @PostMapping
+    public DepartmentDTO create(@RequestBody DepartmentDTO dto, Authentication authentication) {
+        return departmentService.createDepartment(dto, authentication.getName());
+    }
+
+    @PutMapping("/{deptCode}")
+    public DepartmentDTO update(@RequestBody DepartmentDTO dto, @PathVariable String deptCode, Authentication authentication) {
+        dto.setDeptCode(deptCode);
+        return departmentService.updateDepartment(dto);
+    }
+
+    @DeleteMapping("/{deptCode}")
+    public void delete(@PathVariable String deptCode) {
+        departmentService.deleteDepartment(deptCode);
     }
 }

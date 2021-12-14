@@ -51,10 +51,10 @@ public class AssignmentEntity {
     private UserDetailEntity assignBy;
 
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<AssignmentDetailEntity> assignmentDetails;
+    private List<AssignmentDetailEntity> assignmentDetails;
 
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    List<RequestReturnEntity> requestReturns;
+    private List<RequestReturnEntity> requestReturns;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "request_assign_id", referencedColumnName = "id", nullable = true)

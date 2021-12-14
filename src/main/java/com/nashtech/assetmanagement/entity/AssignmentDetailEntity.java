@@ -33,8 +33,8 @@ public class AssignmentDetailEntity {
     @Column(length = 30,name = "state")
     private AssignmentState state;
 
-    @Column(name = "returned_date")
-    private LocalDateTime returnedDate;
+//    @Column(name = "returned_date")
+//    private LocalDateTime returnedDate;
 
     @ManyToOne
     @JoinColumn(name="request_return_id")

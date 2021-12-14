@@ -3,7 +3,6 @@ package com.nashtech.assetmanagement.controller;
 import com.nashtech.assetmanagement.dto.AssetDTO;
 
 import com.nashtech.assetmanagement.service.AssetService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
