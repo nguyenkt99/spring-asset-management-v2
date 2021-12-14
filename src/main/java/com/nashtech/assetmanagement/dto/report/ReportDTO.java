@@ -1,4 +1,4 @@
-package com.nashtech.assetmanagement.dto;
+package com.nashtech.assetmanagement.dto.report;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,4 +17,5 @@ public class ReportDTO {
     private int notAvailable;
     private int waitingForRecycle;
     private int recycled;
+    private int repairing;
 }
