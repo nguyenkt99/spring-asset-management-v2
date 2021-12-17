@@ -70,10 +70,10 @@ public class RequestAssignServiceImpl implements RequestAssignService {
         RequestAssignEntity savedReq = requestAssignRepository.save(requestAssign);
 
         String title = "";
-        title = savedReq.getRequestAssignBy().getFirstName() + " " + savedReq.getRequestAssignBy().getLastName()  + " (" + savedReq.getRequestAssignBy().getUser().getUserName() + ")" + " created request for assigning including: ";
-        for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails()) {
+        title = savedReq.getRequestAssignBy().getFirstName() + " " + savedReq.getRequestAssignBy().getLastName() + " created request for assigning including: ";
+        for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails())
             title +=  r.getCategory().getName() + ": " + r.getQuantity() + ", ";
-        }
+        title = title.substring(0, title.length() - 2);
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_ASSIGN, "admin", title, false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);

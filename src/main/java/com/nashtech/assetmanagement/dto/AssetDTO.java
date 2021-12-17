@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.constants.AssetState;
 import com.nashtech.assetmanagement.constants.AssignmentState;
 import com.nashtech.assetmanagement.constants.Location;
-import com.nashtech.assetmanagement.constants.RepairState;
 import com.nashtech.assetmanagement.entity.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

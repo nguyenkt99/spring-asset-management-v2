@@ -131,25 +131,14 @@ public class AssignmentServiceImpl implements AssignmentService {
         assignment.setCreatedDate(LocalDateTime.now());
         assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
         assignment.setAssignmentDetails(assignmentDetails);
-
-//        SimpleMailMessage msg = new SimpleMailMessage();
-//        msg.setTo(assignTo.getEmail());
-//        msg.setSubject("New assignment assigned to you");
-//        msg.setText("Your administrator has assigned you a new assignment: \nAsset " +
-//                "code: "+assignment.getAssetEntity().getAssetCode()+
-//                "\nAsset name: "+ assignment.getAssetEntity().getAssetName()+
-//                "\nDate: "+dateFormatter.format(assignment.getAssignedDate())+
-//                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
-//        javaMailSender.send(msg);
-
         AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
         String title = "";
         String usernameReceiver = null;
-        title = "Admin created the assignment with id = " + savedAssignment.getId() + " includes: ";
-        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
-            title += a.getAsset().getAssetCode() + ", ";
-        }
+        title = "Admin created the assignment with id=" + savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails())
+            title += a.getAsset().getAssetName() + " (" + a.getAsset().getAssetCode() + "), ";
+        title = title.substring(0, title.length() - 2);
         usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
         NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
         try {
@@ -168,6 +157,12 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         AssignmentEntity assignment = assignmentRepository.findById(assignmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
+
+        // if assignment was accepted then can be updated in the assigned day
+        if(assignment.getState() == AssignmentState.ACCEPTED && assignment.getAssignedDate().isBefore(LocalDate.now())) {
+            throw new ConflictException("Assignment has been accepted can only be edited within the assigned day!");
+        }
+
         if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE && assignment.getState() != AssignmentState.ACCEPTED) {
             throw new ConflictException("Assignment is editable while in waiting for acceptance or accepted state!");
         }
@@ -208,7 +203,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         for (int i = 0; i < assignmentDetails.size(); i++) {
             boolean isExists = false;
             if (assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_ACCEPTANCE
-                    || assignmentDetails.get(i).getState() == AssignmentState.ACCEPTED) {
+                    || assignmentDetails.get(i).getState() == AssignmentState.ACCEPTED
+                    || assignmentDetails.get(i).getState() == AssignmentState.WAITING_FOR_RETURNING
+                    || assignmentDetails.get(i).getState() == AssignmentState.COMPLETED) {
                 for (int j = 0; j < assignmentDetailDTOs.size(); j++) {
                     if (assignmentDetailDTOs.get(j).getAssetCode().equals(assignmentDetails.get(i).getAsset().getAssetCode())) {
                         isExists = true;
@@ -244,17 +241,6 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         // check all assignment detail if update assign date or return date!!!
         for (AssignmentDetailEntity assignmentDetail : assignmentDetails) {
-//            List<AssignmentDetailEntity> assetAssignmentDetails = assetRepository // can get asset from assignmentDetail directly
-//                    .getById(assignmentDetail.getAsset().getAssetCode()).getAssignmentDetails()
-//                    .stream().filter(a -> a.getAssignment().getId() != assignmentDTO.getId())
-//                    .collect(Collectors.toList());
-//            for (AssignmentDetailEntity a : assetAssignmentDetails) {
-//                AssignmentEntity asm = a.getAssignment();
-//                if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
-//                        asm.getAssignedDate(), asm.getIntendedReturnDate()))
-//                    throw new ConflictException("Asset not available in this time!");
-//            }
-
             List<AssignmentDetailEntity> validAssignmentDetails = assignmentDetail.getAsset().getAssignmentDetails()
                     .stream().filter(ad -> ad.getAssignment().getId() != assignmentDTO.getId()
                             && ad.getState() != AssignmentState.DECLINED
@@ -270,25 +256,20 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         assignment.setNote(assignmentDTO.getNote());
         assignment.setUpdatedDate(LocalDateTime.now());
-        assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
-        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
-//        SimpleMailMessage msg = new SimpleMailMessage();
-//        msg.setTo(assignTo.getEmail());
-//        msg.setSubject("New assignment assigned to you");
-//        msg.setText("Your administrator has assigned you a new assignment: \nAsset " +
-//                "code: "+assignment.getAssetEntity().getAssetCode()+
-//                "\nAsset name: "+ assignment.getAssetEntity().getAssetName()+
-//                "\nDate: "+dateFormatter.format(assignment.getAssignedDate())+
-//                "\nPlease check your assignment by your account\nKind Regards,\nAdministrator");
-//        javaMailSender.send(msg);
+        // if any assignment detail has waiting for accept (add...) then set state assignment is waiting....
+        if(assignmentDetails.stream().anyMatch(ad -> ad.getState() == AssignmentState.WAITING_FOR_ACCEPTANCE))
+            assignment.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
+        else
+            assignment.setState(AssignmentState.ACCEPTED);
+        AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
         String title = "";
         String usernameReceiver = null;
-        title = "Admin updated the assignment with id = " + savedAssignment.getId() + " includes: ";
-        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
-            title += a.getAsset().getAssetCode() + ", ";
-        }
+        title = "Admin updated the assignment with id="+ savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails())
+            title += a.getAsset().getAssetName() + " (" + a.getAsset().getAssetCode() + "), ";
+        title = title.substring(0, title.length() - 2);
         usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
         NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
         try {
@@ -305,8 +286,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         AssignmentEntity assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
 
-        if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE) {
-            throw new BadRequestException("Assignment delete when state is waiting for acceptance!");
+        if (assignment.getState() != AssignmentState.WAITING_FOR_ACCEPTANCE
+                && assignment.getState() != AssignmentState.DECLINED) {
+            throw new BadRequestException("Assignment delete when state is waiting for acceptance or declined!");
         }
 
         List<AssignmentDetailEntity> assignmentDetails = assignment.getAssignmentDetails();
@@ -342,13 +324,14 @@ public class AssignmentServiceImpl implements AssignmentService {
         AssignmentEntity savedAssignment = assignmentRepository.save(assignment);
 
         String title = "";
-        String usernameReceiver = null;
-        title = "Admin updated the assignment with id = " + savedAssignment.getId() + " includes: ";
-        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails()) {
-            title += a.getAsset().getAssetCode() + ", ";
-        }
-        usernameReceiver = savedAssignment.getAssignTo().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, usernameReceiver, title, false, new Date());
+        String fullNameReceiver = null;
+        fullNameReceiver = savedAssignment.getAssignTo().getFirstName() + " " + savedAssignment.getAssignTo().getLastName();
+        String action = assignmentDTO.getState() == AssignmentState.ACCEPTED ? "accepted" : "declined";
+        title = fullNameReceiver + " has " + action + " the assignment with id=" + savedAssignment.getId() + " includes: ";
+        for(AssignmentDetailEntity a : savedAssignment.getAssignmentDetails())
+            title += a.getAsset().getAssetName() + " (" + a.getAsset().getAssetCode() + "), ";
+        title = title.substring(0, title.length() - 2);
+        NotificationDTO notificationDTO = new NotificationDTO(savedAssignment.getId(), NotificationType.ASSIGNMENT, "admin", title.substring(0, title.length()), false, new Date());
         try {
             firebaseService.saveNotification(notificationDTO);
         } catch (Exception e) {

@@ -18,10 +18,10 @@ import java.util.List;
 @Table(name = "departments")
 public class DepartmentEntity {
     @Id
-    @Column(name = "dept_code", length = 5)
+    @Column(name = "dept_code", length = 6)
     private String deptCode;
 
-    @Column(name ="name", unique = true, length = 15)
+    @Column(name ="name", unique = true, length = 20)
     private String name;
 
     @ManyToOne

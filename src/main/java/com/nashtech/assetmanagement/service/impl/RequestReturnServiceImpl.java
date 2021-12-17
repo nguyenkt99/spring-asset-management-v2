@@ -15,10 +15,12 @@ import com.nashtech.assetmanagement.repository.*;
 import com.nashtech.assetmanagement.service.FirebaseService;
 import com.nashtech.assetmanagement.service.RequestReturnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -46,6 +48,7 @@ public class RequestReturnServiceImpl implements RequestReturnService {
 
     @Override
     public RequestReturnDTO create(RequestReturnDTO requestReturnDTO) {
+        String strReturnedAssets = "";
         List<AssignmentDetailEntity> assignmentDetailsForReturn = new ArrayList<>();
         RequestReturnEntity requestReturn = requestReturnDTO.toEntity();
         AssignmentEntity assignment = assignmentRepository.findById(requestReturnDTO.getAssignmentId())
@@ -83,47 +86,46 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         requestReturn.setAssignment(assignment);
         requestReturn.setAssignmentDetails(assignmentDetailsForReturn);
 
-//        if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName()))
-//        {
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(assignment.getAssignTo().getEmail());
-//            msg.setSubject("Returning Asset");
-//            msg.setText("Your administrator need you to return assets to the company: " +
-//                    "" +
-//                    "\nAsset" +
-//                    " " +
-//                    "code: " + assignment.getAssetEntity().getAssetCode()+
-//                    "\nAsset name: " + assignment.getAssetEntity().getAssetName()+
-//                    "\nRequested Date: " + format.format(request.getRequestedDate())+
-//                    "\nYou must return it within 3 days." +
-//                    "\nPlease check your request by your account\nKind Regards," +
-//                    "\nAdministrator");
-//            javaMailSender.send(msg);
-//        }
-
         if (!assignmentDetails.stream().anyMatch(x -> x.getRequestReturn() == null))
             assignment.setState(AssignmentState.WAITING_FOR_RETURNING);
-
         RequestReturnEntity savedReq = requestReturnRepository.save(requestReturn);
 
         String title = "";
         String usernameReceiver = null;
+        for(AssignmentDetailEntity a : assignmentDetailsForReturn)
+            strReturnedAssets += a.getAsset().getAssetName() + " (" + a.getAsset().getAssetCode() + "), ";
+        strReturnedAssets = strReturnedAssets.substring(0, strReturnedAssets.length() - 2);
+
         if (savedReq.getRequestBy().getUser().getRole().getName() == RoleName.ROLE_ADMIN) {
             usernameReceiver = savedReq.getAssignment().getAssignTo().getUser().getUserName();
-            title = "Admin created request for retuning with assignment id = " + savedReq.getAssignment().getId();
+            title = "Admin created the request for retuning from assignment with id=" + assignment.getId() +  "includes: " + strReturnedAssets;
         } else {
             usernameReceiver = "admin";
-            title = savedReq.getRequestBy().getUser().getUserName() + " created request for retuning with assignment id = " + savedReq.getAssignment().getId();
+            title = savedReq.getRequestBy().getFirstName() + " " + savedReq.getRequestBy().getLastName() +
+                    " created the request for retuning includes: " + strReturnedAssets;
         }
-
         NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false, new Date());
+
         try {
             firebaseService.saveNotification(notificationDTO);
+            if(!requestBy.getUser().getUserName().equals(assignment.getAssignTo().getUser().getUserName())) {
+                SimpleMailMessage msg = new SimpleMailMessage();
+                msg.setTo(assignment.getAssignTo().getEmail());
+                msg.setSubject("Returning Asset");
+                msg.setText("Admin need you to return assets to the company at " +
+                        assignment.getIntendedReturnDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) +
+                        "\nAsset list: " + strReturnedAssets +
+                        "\nPlease check the request by your account" +
+                        "\nKind Regards, " +
+                        "\nAdministrator");
+                javaMailSender.send(msg);
+            }
         } catch (Exception e) {
             System.out.println("Send Notification Error!!");
         } finally {
             return new RequestReturnDTO(savedReq);
         }
+
     }
 
     @Override
@@ -189,39 +191,39 @@ public class RequestReturnServiceImpl implements RequestReturnService {
         requestReturn.setReturnedDate(LocalDateTime.now());
         requestReturn.setState(RequestReturnState.COMPLETED);
         requestReturn.setAcceptBy(userRepository.getByStaffCode(staffCode).getUserDetail());
-
-//        if(requestReturn.getRequestBy().getUser().getRole().equals(RoleName.ROLE_STAFF))
-//        {
-//            SimpleMailMessage msg = new SimpleMailMessage();
-//            msg.setTo(assignment.getAssignTo().getEmail());
-//            msg.setSubject("Your request ");
-//            msg.setText("Administrator has been accepted your request: " +
-//                    "\nRequestID: "+requestReturn.getId()+
-//                    "\nAsset code: "+assignment.getAssetEntity().getAssetCode()+
-//                    "\nAsset name: "+ assignment.getAssetEntity().getAssetName()+
-//                    "\nRequest state: "+request.getState()+
-//                    "\nPlease check your request by your account\nKind Regards," +
-//                    "\nAdministrator");
-//            javaMailSender.send(msg);
-//        }
         RequestReturnEntity savedReq = requestReturnRepository.save(requestReturn);
-        String title = "";
-        String usernameReceiver = null;
-        title = "Admin accepted the request for retuning with assignment id = " + savedReq.getAssignment().getId() +
-            " includes: ";
-        for(AssignmentDetailEntity a : savedReq.getAssignmentDetails()) {
-            title += a.getAsset().getAssetCode() + ", ";
-        }
 
-        usernameReceiver = savedReq.getRequestBy().getUser().getUserName();
-        NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title, false, new Date());
-        try {
-            firebaseService.saveNotification(notificationDTO);
-        } catch (Exception e) {
-            System.out.println("Send Notification Error!!");
-        } finally {
-            return new RequestReturnDTO(savedReq);
+
+        if(requestReturn.getRequestBy().getUser().getRole().equals(RoleName.ROLE_STAFF)) {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            String usernameReceiver = null;
+            String strReturnedAssets = "";
+            String title = "Admin has accepted the request for retuning from assignment with id=" + assignment.getId() + " includes: ";
+            for(AssignmentDetailEntity a : savedReq.getAssignmentDetails())
+                strReturnedAssets += a.getAsset().getAssetName() + " (" + a.getAsset().getAssetCode() + "), ";
+            strReturnedAssets = strReturnedAssets.substring(0, title.length() - 2);
+            usernameReceiver = savedReq.getRequestBy().getUser().getUserName();
+            NotificationDTO notificationDTO = new NotificationDTO(savedReq.getId(), NotificationType.REQUEST_RETURN, usernameReceiver, title + strReturnedAssets, false, new Date());
+
+            try {
+                firebaseService.saveNotification(notificationDTO);
+                msg.setTo(assignment.getAssignTo().getEmail());
+                msg.setSubject("Admin accept the request for returning");
+                msg.setText("Admin has accepted the request for returning: " +
+                        "\nAssignmentID: " + assignment.getId() +
+                        "\nRequestID: " + requestReturn.getId() +
+                        "\nAsset list: " + strReturnedAssets +
+                        "\nPlease check your request by your account" +
+                        "\nKind Regards," +
+                        "\nAdministrator");
+                javaMailSender.send(msg);
+            } catch (Exception e) {
+                System.out.println("Send Notification Error!!");
+            } finally {
+                return new RequestReturnDTO(savedReq);
+            }
         }
+        return new RequestReturnDTO(savedReq);
     }
 
     private final String REQUEST_NOT_FOUND_ERROR = "Request not found.";

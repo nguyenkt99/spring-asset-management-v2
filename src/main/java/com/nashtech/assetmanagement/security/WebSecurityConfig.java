@@ -77,7 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(AUTH_WHITELIST).permitAll()
                 .antMatchers(HttpMethod.PATCH,"/api/request-assign/**").hasRole("ADMIN")
                 .antMatchers("/api/request-assign/**").hasAnyRole("ADMIN", "STAFF")
-                .antMatchers(HttpMethod.GET,"/api/category").hasAnyRole("ADMIN", "STAFF")
+                .antMatchers(HttpMethod.GET,"/api/category", "/api/assignment/**").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers("/api/assignment/home", "/api/users/profile").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers(HttpMethod.POST, "/api/request-return").hasAnyRole("ADMIN", "STAFF")
                 .antMatchers(HttpMethod.DELETE, "/api/request-return/**").hasAnyRole("ADMIN", "STAFF")
