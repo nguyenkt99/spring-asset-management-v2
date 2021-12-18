@@ -25,7 +25,7 @@ public class AssetServiceImpl implements AssetService {
     private final String CATEGORY_NOT_FOUND_ERROR = "Category prefix not exists.";
     private final String USER_NOT_FOUND_ERROR = "User not exists.";
     private final String ASSET_NOT_FOUND_ERROR = "Asset not found.";
-    private final String ASSET_CONFLICT_ERROR = "Asset belongs to one or more historical assignments.";
+    private final String ASSET_CONFLICT_ERROR = "Asset belongs to one or more historical assignments or historical repairs.";
     private final String ASSET_BAD_STATE_ERROR = "Asset must be AVAILABLE or NOT_AVAILABLE.";
 
     @Autowired
@@ -85,7 +85,7 @@ public class AssetServiceImpl implements AssetService {
     public Boolean delete(String assetCode) {
         AssetEntity asset = assetRepo.findByAssetCode(assetCode)
                 .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND_ERROR));
-        if (asset.getAssignmentDetails().size() > 0)
+        if (asset.getAssignmentDetails().size() > 0 || asset.getRepairs().size() > 0)
             throw new ConflictException(ASSET_CONFLICT_ERROR);
         assetRepo.deleteById(assetCode);
         return true;
@@ -95,8 +95,8 @@ public class AssetServiceImpl implements AssetService {
     public AssetDTO update(AssetDTO dto) {
         AssetEntity asset = assetRepo.findByAssetCode(dto.getAssetCode())
                 .orElseThrow(() -> new ResourceNotFoundException(ASSET_NOT_FOUND_ERROR));
-        if (asset.getState() == AssetState.ASSIGNED) {
-            throw new ConflictException("Asset has been assigned");
+        if (asset.getState() == AssetState.ASSIGNED || asset.getState() == AssetState.REPAIRING) {
+            throw new ConflictException("Asset has being assigned or repairing");
         }
 
         asset.setAssetName(dto.getAssetName());

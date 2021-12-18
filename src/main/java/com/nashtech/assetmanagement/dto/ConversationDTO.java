@@ -1,18 +1,14 @@
 package com.nashtech.assetmanagement.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.nashtech.assetmanagement.entity.ConversationEntity;
 import com.nashtech.assetmanagement.entity.MessageEntity;
-import com.nashtech.assetmanagement.entity.UserDetailEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter

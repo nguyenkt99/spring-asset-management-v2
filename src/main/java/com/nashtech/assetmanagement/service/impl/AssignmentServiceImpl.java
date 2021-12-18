@@ -76,7 +76,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     public AssignmentDTO save(AssignmentDTO assignmentDTO) {
         // check assigned date < returned date and both must be today or future
         if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
-            throw new ConflictException("Date must be today or future!");
+            throw new ConflictException("Assigned date and returned date must not be less than today!");
 
         AssignmentEntity assignment = assignmentDTO.toEntity();
         RequestAssignEntity requestAssign = null;
@@ -111,7 +111,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                     AssignmentEntity asm = ad.getAssignment();
                     if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
                             asm.getAssignedDate(), asm.getIntendedReturnDate()))
-                        throw new ConflictException("Asset not available in this time!");
+                        throw new ConflictException(ad.getAsset().getAssetCode() + " not available in this time!");
             }
         }
 
@@ -153,7 +153,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     public AssignmentDTO updateAssignment(AssignmentDTO assignmentDTO) {
         // check assigned date < returned date and both must be today or future
         if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
-            throw new ConflictException("Date must be today or future!");
+            throw new ConflictException("Assigned date and returned date must not be less than today!");
 
         AssignmentEntity assignment = assignmentRepository.findById(assignmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
@@ -180,19 +180,19 @@ public class AssignmentServiceImpl implements AssignmentService {
             // case: new assign to
             if (!assignment.getAssignTo().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedTo())) {
                 assignTo = userRepository.findByUserName(assignmentDTO.getAssignedTo())
-                        .orElseThrow(() -> new ResourceNotFoundException("AssignTo not found!")).getUserDetail();
+                        .orElseThrow(() -> new ResourceNotFoundException("Assigned to not found!")).getUserDetail();
                 assignment.setAssignTo(assignTo);
             }
 
             // case: new assign by
             if (!assignment.getAssignBy().getUser().getUserName().equalsIgnoreCase(assignmentDTO.getAssignedBy())) {
                 assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
-                        .orElseThrow(() -> new ResourceNotFoundException("AssignBy not found!")).getUserDetail();
+                        .orElseThrow(() -> new ResourceNotFoundException("Assigned by not found!")).getUserDetail();
                 assignment.setAssignBy(assignBy);
 
                 // check location
                 if (assignTo.getDepartment().getLocation() != assignBy.getDepartment().getLocation()) {
-                    throw new ConflictException("The location of assignTo difference from admin!");
+                    throw new ConflictException("The location of assignee difference from admin!");
                 }
             }
 
@@ -250,7 +250,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                 AssignmentEntity asm = ad.getAssignment();
                 if(isBusyDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate(),
                         asm.getAssignedDate(), asm.getIntendedReturnDate()))
-                    throw new ConflictException("Asset not available in this time!");
+                    throw new ConflictException(ad.getAsset().getAssetCode() + "Asset not available in this time!");
             }
         }
 
@@ -348,7 +348,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         List<AssignmentDetailDTO> assignmentDetailDTOs = assignmentDTO.getAssignmentDetails();
 
         if(!isValidDate(assignmentDTO.getAssignedDate(), assignmentDTO.getIntendedReturnDate()))
-            throw new ConflictException("Date must be today or future!");
+            throw new ConflictException("Assigned date and returned date must not be less than today!");
 
         boolean isValidDate = true;
         for (AssignmentDetailDTO assignmentDetailDTO : assignmentDetailDTOs) {
