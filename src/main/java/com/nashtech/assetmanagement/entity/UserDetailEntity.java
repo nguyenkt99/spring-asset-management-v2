@@ -75,6 +75,12 @@ public class UserDetailEntity {
     @OneToMany(mappedBy = "createdBy")
     private List<RepairEntity> repairBys = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user1")
+    private List<ConversationEntity> conversationUser1s = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user2")
+    private List<ConversationEntity> conversationUser2s = new ArrayList<>();
+
 //    @PrePersist
 //    protected void onCreate() {
 //        this.state = UserState.ENABLED;

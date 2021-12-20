@@ -166,7 +166,9 @@ public class UserServiceImpl implements UserService {
                 || userDetail.getAssignmentsBys().size() > 0
                 || userDetail.getRequestAssignBys().size() > 0
                 || userDetail.getRequestReturnBys().size() > 0
-                || userDetail.getAcceptBys().size() > 0) {
+                || userDetail.getAcceptBys().size() > 0
+                || userDetail.getConversationUser1s().size() > 0
+                || userDetail.getConversationUser2s().size() > 0) {
             return ResponseEntity.ok(true); // if status code is 200 then disable user
         } else {
             return ResponseEntity.accepted().body(true); // if status code is 202 then delete user
@@ -195,7 +197,9 @@ public class UserServiceImpl implements UserService {
                 || userEntity.getUserDetail().getAssignmentsBys().size() > 0
                 || userEntity.getUserDetail().getRequestAssignBys().size() > 0
                 || userEntity.getUserDetail().getRequestReturnBys().size() > 0
-                || userEntity.getUserDetail().getAcceptBys().size() > 0) {
+                || userEntity.getUserDetail().getAcceptBys().size() > 0
+                || userEntity.getUserDetail().getConversationUser1s().size() > 0
+                || userEntity.getUserDetail().getConversationUser2s().size() > 0) {
             userEntity.getUserDetail().setState(UserState.DISABLED);
             userRepository.save(userEntity);
         } else {
