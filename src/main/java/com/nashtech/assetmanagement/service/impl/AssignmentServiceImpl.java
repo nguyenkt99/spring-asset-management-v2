@@ -85,6 +85,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                     .orElseThrow(() -> new ResourceNotFoundException("Request assign not found!"));
             requestAssign.setState(RequestAssignState.ACCEPTED);
         }
+
         UserDetailEntity assignTo = userRepository.findByUserName(assignmentDTO.getAssignedTo())
                 .orElseThrow(() -> new ResourceNotFoundException("AssignTo not found!")).getUserDetail();
         UserDetailEntity assignBy = userRepository.findByUserName(assignmentDTO.getAssignedBy())
@@ -125,6 +126,33 @@ public class AssignmentServiceImpl implements AssignmentService {
             assignmentDetails.add(assignmentDetail);
         }
 
+        // check quantity of category in request assign is same the new assignment
+        if(requestAssign != null) {
+            HashMap<CategoryEntity, Integer> quantityOfCategory = new HashMap<>();
+            for(AssignmentDetailEntity a : assignmentDetails) {
+                CategoryEntity category = a.getAsset().getCategoryEntity();
+                if(quantityOfCategory.containsKey(category))
+                    quantityOfCategory.put(category, quantityOfCategory.get(category) + 1);
+                else
+                    quantityOfCategory.put(category, 1);
+            }
+
+//            for(CategoryEntity c : quantityOfCategory.keySet()) {
+//                System.out.println(c.getName() + ": " + quantityOfCategory.get(c));
+//            }
+
+            if(quantityOfCategory.keySet().size() != requestAssign.getRequestAssignDetails().size()) {
+                String strRequests = "";
+                for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails())
+                    strRequests += r.getCategory().getName() + "(" + r.getQuantity().toString() + "), ";
+                throw new BadRequestException("The request includes: " + strRequests.substring(0, strRequests.length() - 2));
+            } else {
+                for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails())
+                    if(quantityOfCategory.get(r.getCategory()) != r.getQuantity())
+                        throw new BadRequestException("The number of "+ r.getCategory().getName() + " is " + r.getQuantity());
+            }
+        }
+
         assignment.setRequestAssign(requestAssign); // requestAssign can be null
         assignment.setAssignTo(assignTo);
         assignment.setAssignBy(assignBy);
@@ -157,6 +185,14 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         AssignmentEntity assignment = assignmentRepository.findById(assignmentDTO.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found!"));
+
+        // Get the request assign in assignment
+//        RequestAssignEntity requestAssign = null;
+//        if (assignmentDTO.getRequestAssignId() != null) {
+//            requestAssign = requestAssignRepository.findById(assignmentDTO.getRequestAssignId())
+//                    .orElseThrow(() -> new ResourceNotFoundException("Request assign not found!"));
+//            requestAssign.setState(RequestAssignState.ACCEPTED);
+//        }
 
         // if assignment was accepted then can be updated in the assigned day
         if(assignment.getState() == AssignmentState.ACCEPTED && assignment.getAssignedDate().isBefore(LocalDate.now())) {
@@ -224,6 +260,7 @@ public class AssignmentServiceImpl implements AssignmentService {
             }
         }
 
+
         for (int i = 0; i < assignmentDetailDTOs.size(); i++) {
             AssetEntity asset = assetRepository.findById(assignmentDetailDTOs.get(i).getAssetCode())
                     .orElseThrow(() -> new ResourceNotFoundException("Asset not found!"));
@@ -237,6 +274,36 @@ public class AssignmentServiceImpl implements AssignmentService {
             newAssignmentDetail.setAssignment(assignment);
             newAssignmentDetail.setState(AssignmentState.WAITING_FOR_ACCEPTANCE);
             assignmentDetails.add(newAssignmentDetail);
+        }
+
+        // check quantity of category in request assign is same the new assignment
+        RequestAssignEntity requestAssign = assignment.getRequestAssign();
+        if(requestAssign != null) {
+            HashMap<CategoryEntity, Integer> quantityOfCategory = new HashMap<>();
+            for(AssignmentDetailEntity a : assignmentDetails) {
+                if(a.getState() != AssignmentState.COMPLETED) { // when state assignment is 'accepted'
+                    CategoryEntity category = a.getAsset().getCategoryEntity();
+                    if(quantityOfCategory.containsKey(category))
+                        quantityOfCategory.put(category, quantityOfCategory.get(category) + 1);
+                    else
+                        quantityOfCategory.put(category, 1);
+                }
+            }
+
+//            for(CategoryEntity c : quantityOfCategory.keySet()) {
+//                System.out.println(c.getName() + ": " + quantityOfCategory.get(c));
+//            }
+
+            if(quantityOfCategory.keySet().size() != requestAssign.getRequestAssignDetails().size()) {
+                String strRequests = "";
+                for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails())
+                    strRequests += r.getCategory().getName() + "(" + r.getQuantity().toString() + "), ";
+                throw new BadRequestException("The request includes: " + strRequests.substring(0, strRequests.length() - 2));
+            } else {
+                for(RequestAssignDetailEntity r : requestAssign.getRequestAssignDetails())
+                    if(quantityOfCategory.get(r.getCategory()) != r.getQuantity())
+                        throw new BadRequestException("The number of "+ r.getCategory().getName() + " is " + r.getQuantity());
+            }
         }
 
         // check all assignment detail if update assign date or return date!!!
