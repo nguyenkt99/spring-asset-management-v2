@@ -1,6 +1,5 @@
 package com.nashtech.assetmanagement.controller;
 
-import com.nashtech.assetmanagement.chat.MessageModel;
 import com.nashtech.assetmanagement.dto.NotificationDTO;
 import com.nashtech.assetmanagement.service.FirebaseService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,9 +19,9 @@ public class FirebaseController {
         return firebaseService.getNotifications();
     }
 
-    @GetMapping("/messages")
-    List<MessageModel> getMessages(@RequestParam String sender, @RequestParam String receiver) {
-        return firebaseService.getMessages(sender, receiver);
-    }
+//    @GetMapping("/messages")
+//    List<MessageModel> getMessages(@RequestParam String sender, @RequestParam String receiver) {
+//        return firebaseService.getMessages(sender, receiver);
+//    }
 
 }

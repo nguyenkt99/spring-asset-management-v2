@@ -6,7 +6,6 @@ import com.google.cloud.firestore.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.cloud.FirestoreClient;
-import com.nashtech.assetmanagement.chat.MessageModel;
 import com.nashtech.assetmanagement.dto.NotificationDTO;
 import com.nashtech.assetmanagement.exception.BadRequestException;
 import com.nashtech.assetmanagement.security.services.UserDetailsImpl;
@@ -89,39 +88,39 @@ public class FirebaseServiceImpl implements FirebaseService {
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public void saveMessage(MessageModel message) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        String id = firestore.collection("messages").document().getId();
-        ApiFuture<WriteResult> collectionsApiFuture = firestore.collection("messages")
-                .document(id).set(message);
-    }
-
-    @Override
-    public List<MessageModel> getMessages(String sender, String receiver) {
-        Firestore firestore = FirestoreClient.getFirestore();
-        CollectionReference messages = firestore.collection("messages");
-        ApiFuture<QuerySnapshot> future1 = messages.whereEqualTo("sender", sender).whereEqualTo("receiver", receiver).get();
-        ApiFuture<QuerySnapshot> future2 = messages.whereEqualTo("sender", receiver).whereEqualTo("receiver", sender).get();
-
-        List<QueryDocumentSnapshot> document1s = null;
-        List<QueryDocumentSnapshot> document2s = null;
-        try {
-            document1s = future1.get().getDocuments();
-            document2s = future2.get().getDocuments();
-        } catch (Exception e) {
-            log.error("Get documents error!");
-        }
-
-        List<MessageModel> messageList = new ArrayList<>();
-        for (QueryDocumentSnapshot document : document1s)
-            messageList.add(document.toObject(MessageModel.class));
-        for (QueryDocumentSnapshot document : document2s)
-            messageList.add(document.toObject(MessageModel.class));
-
-        List<MessageModel> sortedList = messageList.stream().sorted(Comparator.comparing(MessageModel::getTime))
-                .collect(Collectors.toList());
-
-        return sortedList;
-    }
+//    @Override
+//    public void saveMessage(MessageModel message) {
+//        Firestore firestore = FirestoreClient.getFirestore();
+//        String id = firestore.collection("messages").document().getId();
+//        ApiFuture<WriteResult> collectionsApiFuture = firestore.collection("messages")
+//                .document(id).set(message);
+//    }
+//
+//    @Override
+//    public List<MessageModel> getMessages(String sender, String receiver) {
+//        Firestore firestore = FirestoreClient.getFirestore();
+//        CollectionReference messages = firestore.collection("messages");
+//        ApiFuture<QuerySnapshot> future1 = messages.whereEqualTo("sender", sender).whereEqualTo("receiver", receiver).get();
+//        ApiFuture<QuerySnapshot> future2 = messages.whereEqualTo("sender", receiver).whereEqualTo("receiver", sender).get();
+//
+//        List<QueryDocumentSnapshot> document1s = null;
+//        List<QueryDocumentSnapshot> document2s = null;
+//        try {
+//            document1s = future1.get().getDocuments();
+//            document2s = future2.get().getDocuments();
+//        } catch (Exception e) {
+//            log.error("Get documents error!");
+//        }
+//
+//        List<MessageModel> messageList = new ArrayList<>();
+//        for (QueryDocumentSnapshot document : document1s)
+//            messageList.add(document.toObject(MessageModel.class));
+//        for (QueryDocumentSnapshot document : document2s)
+//            messageList.add(document.toObject(MessageModel.class));
+//
+//        List<MessageModel> sortedList = messageList.stream().sorted(Comparator.comparing(MessageModel::getTime))
+//                .collect(Collectors.toList());
+//
+//        return sortedList;
+//    }
 }
