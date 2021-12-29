@@ -1,20 +1,25 @@
-# Introduction 
-TODO: Give a short introduction of your project. Let this section explain the objectives or the motivation behind this project. 
+- FE repo: https://github.com/nguyenkt99/reactjs-asset-management-v2 <br />
+- Link demo: https://asset-ptithcm-v2.herokuapp.com (Wait a minute for the server to wake up)<br />
+Staff account: duylv - 123456 <br />
+Admin account: nguyenkt - 12345678 <br />
 
-# Getting Started
-TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
-1.	Installation process
-2.	Software dependencies
-3.	Latest releases
-4.	API references
+The project is used to manage asset in the company. Mainly revolves around borrowing and returning assets<br />
 
-# Build and Test
-TODO: Describe and show how to build your code and run the tests. 
+The project is used by staff and admin: <br />
+Staff:
+- Login, log out
+- Forgot password, change password
+- Receive notifications
+- Chat message
+- Create request for assigning
+- Create request for returning <br />
 
-# Contribute
-TODO: Explain how other users and developers can contribute to make your code better. 
+Admin:
+- Manage user - Manage department
+- Manage asset - Manage category
+- Manage assignment
+- Manage request for assigning
+- Manage request for returning
+- View/export report
 
-If you want to learn more about creating good readme files then refer the following [guidelines](https://docs.microsoft.com/en-us/azure/devops/repos/git/create-a-readme?view=azure-devops). You can also seek inspiration from the below readme files:
-- [ASP.NET Core](https://github.com/aspnet/Home)
-- [Visual Studio Code](https://github.com/Microsoft/vscode)
-- [Chakra Core](https://github.com/Microsoft/ChakraCore)
+Project detail: https://drive.google.com/file/d/18SH0iE1eKzGSlHba9wHbc_ZwkLCybl6o
