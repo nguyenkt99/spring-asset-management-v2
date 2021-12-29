@@ -1,9 +1,9 @@
 - FE repo: https://github.com/nguyenkt99/reactjs-asset-management-v2 <br />
 - Link demo: https://asset-ptithcm-v2.herokuapp.com (Wait a minute for the server to wake up)<br />
-Staff account: duylv - 123456 <br />
-Admin account: nguyenkt - 12345678 <br />
+Staff account: duylv - 12345678 | tuantq - 12345678 <br />
+Admin account: nguyenkt - 12345678 | vietvb - 12345678 <br />
 
-The project is used to manage asset in the company. Mainly revolves around borrowing and returning assets<br />
+The project is a web app used to manage asset in the company. Mainly revolves around borrowing and returning assets<br />
 
 The project is used by staff and admin: <br />
 Staff:
